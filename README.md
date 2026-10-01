@@ -1,7 +1,10 @@
 # LedgerOps
 
-> v0.1, alpha. Feedback welcome via GitHub issues. Built on the MIT-licensed
-> [XeroAPI/xero-command-line](https://github.com/XeroAPI/xero-command-line); see NOTICE.
+> v0.1, alpha. Feedback welcome via GitHub issues.
+>
+> LedgerOps is a fork of [XeroAPI/xero-command-line](https://github.com/XeroAPI/xero-command-line),
+> the MIT-licensed Xero CLI built by Regan Ashworth ([@TheRegan](https://github.com/TheRegan))
+> and the Xero API team. Thanks to them for the foundation; see NOTICE.
 
 A command-line interface for the practical Xero API using PKCE OAuth and named
 connection profiles. Requires Node.js 24 or newer. This is an alpha; the version
