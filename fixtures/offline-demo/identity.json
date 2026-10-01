@@ -1,0 +1,10 @@
+{
+  "profileName": "synthetic-offline-demo",
+  "tenantId": "synthetic-offline-tenant",
+  "resource": "invoices",
+  "isDemoCompany": true,
+  "observedAt": 1788220800000,
+  "freshUntil": 1788221100000,
+  "capabilities": ["create"],
+  "scopes": ["accounting.transactions"]
+}

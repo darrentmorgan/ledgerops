@@ -1,0 +1,10 @@
+{
+  "profileName": "synthetic-demo-profile",
+  "tenantId": "synthetic-tenant-id",
+  "resource": "synthetic-resource",
+  "isDemoCompany": true,
+  "observedAt": "__RUNTIME_OBSERVED_AT_MS__",
+  "freshUntil": "__RUNTIME_FRESH_UNTIL_MS__",
+  "capabilities": ["ledger.synthetic.write"],
+  "scopes": ["ledger.synthetic.scope"]
+}

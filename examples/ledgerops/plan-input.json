@@ -1,0 +1,12 @@
+{
+  "planId": "synthetic-offline-plan",
+  "operation": "create",
+  "payload": {
+    "amount": "10.01",
+    "label": "synthetic"
+  },
+  "requiredCapabilities": ["ledger.synthetic.write"],
+  "requiredScopes": ["ledger.synthetic.scope"],
+  "createdAt": "__RUNTIME_CREATED_AT_MS__",
+  "expiresAt": "__RUNTIME_EXPIRES_AT_MS__"
+}

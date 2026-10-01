@@ -1,0 +1,151 @@
+{
+  "name": "ledgerops",
+  "version": "0.1.0",
+  "description": "LedgerOps CLI for the practical Xero API via PKCE OAuth.",
+  "license": "MIT",
+  "author": "Darren Morgan",
+  "contributors": [
+    "Regan Ashworth"
+  ],
+  "upstream": "https://github.com/XeroAPI/xero-command-line",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darrentmorgan/ledgerops.git"
+  },
+  "homepage": "https://github.com/darrentmorgan/ledgerops#readme",
+  "bugs": {
+    "url": "https://github.com/darrentmorgan/ledgerops/issues"
+  },
+  "keywords": [
+    "ledgerops",
+    "xero",
+    "cli",
+    "accounting",
+    "oauth",
+    "pkce",
+    "api"
+  ],
+  "type": "module",
+  "bin": {
+    "ledgerops": "bin/run.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "NOTICE"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsx bin/dev.js",
+    "demo:offline": "tsx scripts/demo-offline.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "inventory": "npm run -s build && node dist/lib/inventory/generate.js",
+    "inventory:check": "npm run -s inventory && git diff --exit-code -- docs/xero-endpoint-inventory.md",
+    "postpack": "node -e \"require('node:fs').rmSync('oclif.manifest.json', {force:true})\"",
+    "prepack": "tsc -b && oclif manifest",
+    "format": "biome format .",
+    "format:write": "biome format --write .",
+    "lint": "biome lint --error-on-warnings .",
+    "typecheck": "tsc --noEmit",
+    "pack:check": "node scripts/check-pack.mjs"
+  },
+  "oclif": {
+    "bin": "ledgerops",
+    "dirname": "ledgerops",
+    "commands": "./dist/commands",
+    "topicSeparator": " ",
+    "topics": {
+      "profile": {
+        "description": "Manage Xero connection profiles"
+      },
+      "contacts": {
+        "description": "Manage Xero contacts"
+      },
+      "contact-groups": {
+        "description": "Manage Xero contact groups"
+      },
+      "accounts": {
+        "description": "List Xero accounts"
+      },
+      "users": {
+        "description": "List Xero users"
+      },
+      "invoices": {
+        "description": "Manage Xero invoices"
+      },
+      "quotes": {
+        "description": "Manage Xero quotes"
+      },
+      "credit-notes": {
+        "description": "Manage Xero credit notes"
+      },
+      "purchase-orders": {
+        "description": "Manage Xero purchase orders"
+      },
+      "manual-journals": {
+        "description": "Manage manual journals"
+      },
+      "bank-transactions": {
+        "description": "Manage bank transactions"
+      },
+      "payments": {
+        "description": "Manage payments"
+      },
+      "items": {
+        "description": "Manage Xero items"
+      },
+      "currencies": {
+        "description": "List currencies"
+      },
+      "tax-rates": {
+        "description": "List tax rates"
+      },
+      "reports": {
+        "description": "Generate Xero reports"
+      },
+      "tracking": {
+        "description": "Manage tracking categories and options"
+      },
+      "tracking:categories": {
+        "description": "Manage tracking categories"
+      },
+      "tracking:options": {
+        "description": "Manage tracking options"
+      },
+      "org": {
+        "description": "View organisation details"
+      }
+    },
+    "plugins": [
+      "@oclif/plugin-help"
+    ]
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7",
+    "@napi-rs/keyring": "^1.2.0",
+    "@oclif/core": "^4",
+    "@oclif/plugin-help": "^6",
+    "@toon-format/toon": "^2.1.0",
+    "chalk": "^5",
+    "cli-table3": "^0.6",
+    "open": "^11.0.0",
+    "xero-node": "^13",
+    "zod": "^3"
+  },
+  "devDependencies": {
+    "@oclif/test": "^4",
+    "@types/node": "^24.0.0",
+    "oclif": "^4",
+    "typescript": "^5.9.0",
+    "vitest": "^4.1.11",
+    "@biomejs/biome": "^2.0.0",
+    "tsx": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
