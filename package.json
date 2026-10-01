@@ -122,25 +122,25 @@
     ]
   },
   "dependencies": {
-    "@inquirer/prompts": "^7",
-    "@napi-rs/keyring": "^1.2.0",
-    "@oclif/core": "^4",
-    "@oclif/plugin-help": "^6",
-    "@toon-format/toon": "^2.1.0",
-    "chalk": "^5",
+    "@inquirer/prompts": "^8",
+    "@napi-rs/keyring": "^2.1.0",
+    "@oclif/core": "^5",
+    "@oclif/plugin-help": "^7",
+    "@toon-format/toon": "^4.1.1",
+    "chalk": "^6",
     "cli-table3": "^0.6",
-    "open": "^11.0.0",
-    "xero-node": "^13",
-    "zod": "^3"
+    "open": "^11.0.4",
+    "xero-node": "^20",
+    "zod": "^4"
   },
   "devDependencies": {
-    "@oclif/test": "^4",
-    "@types/node": "^24.0.0",
-    "oclif": "^4",
-    "typescript": "^5.9.0",
-    "vitest": "^4.1.11",
-    "@biomejs/biome": "^2.0.0",
-    "tsx": "^4.0.0"
+    "@oclif/test": "^5",
+    "@types/node": "^26.6.2",
+    "oclif": "^6",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1",
+    "@biomejs/biome": "^2.5.14",
+    "tsx": "^4.23.15"
   },
   "engines": {
     "node": ">=24"
