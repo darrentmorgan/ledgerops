@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "node",
+  "include-component-in-tag": false,
+  "include-v-in-tag": true,
+  "pull-request-header": "Release approval required: merging this release PR causes release-please to create a v* tag on the next main push run. That tag triggers release.yml and its approval-gated npm-release publish. Hold the first release PR until the owner has completed npm sign-in and trusted-publisher setup and the separate v0.1.0 release is complete. This workflow contains no npm publish step.",
+  "changelog-sections": [
+    { "type": "feat", "section": "Features", "hidden": false },
+    { "type": "fix", "section": "Bug Fixes", "hidden": false },
+    { "type": "docs", "section": "Documentation", "hidden": false },
+    { "type": "ci", "section": "Continuous Integration", "hidden": false },
+    { "type": "chore", "section": "Maintenance", "hidden": false },
+    { "type": "perf", "section": "Performance", "hidden": false },
+    { "type": "refactor", "section": "Refactoring", "hidden": false },
+    { "type": "test", "section": "Tests", "hidden": false },
+    { "type": "build", "section": "Build", "hidden": false }
+  ],
+  "packages": {
+    ".": {
+      "package-name": "ledgerops",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}
