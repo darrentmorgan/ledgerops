@@ -1,0 +1,34 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: Prepare release PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Require repository-scoped release token
+        env:
+          RELEASE_PLEASE_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          if [ -z "$RELEASE_PLEASE_TOKEN" ]; then
+            echo 'Configure RELEASE_PLEASE_TOKEN before enabling release automation.' >&2
+            exit 1
+          fi
+      # A repository-scoped token lets the release PR run CI and its tag trigger
+      # release.yml. GITHUB_TOKEN suppresses both; do not fall back to it.
+      - uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          target-branch: main
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
