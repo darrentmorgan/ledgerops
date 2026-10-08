@@ -128,8 +128,9 @@ and never dispatches alone.
 
 Human-readable execution prompts only when stdin and stdout are both terminals.
 JSON and non-TTY execution do not prompt; `--execute` remains required. Prompts go
-to stderr so JSON stays alone on stdout. Direct JSON execution returns a resource
-(or null), not the preview envelope. Batch and target commands have separate
+to stderr so JSON stays alone on stdout. Direct JSON execution returns the written
+resource, not the preview envelope; an unverified result prints `null`, reports
+UNCERTAIN on stderr and exits 1. Batch and target commands have separate
 result/receipt envelopes. Check exit status and outcome, not just valid JSON.
 
 See [the safety model](docs/safety-model.md) and [automation](docs/automation.md).

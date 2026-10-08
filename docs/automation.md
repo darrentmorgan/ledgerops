@@ -20,7 +20,8 @@ ledgerops invoices create --profile synthetic-docs --type ACCREC --contact-id 00
 
 Require `schemaVersion: "ledgerops.mutation-preview.v1"`,
 `willDispatch: false`, the expected profile and payload. Store the digest with the
-reviewed input. Direct execution returns a resource or null, not this envelope.
+reviewed input. Direct execution returns a resource, not this envelope, or `null`
+with exit 1 when the outcome is unverified.
 Execution flags do not turn synthetic IDs into valid live inputs.
 
 For real work, the caller obtains authority for the precise target and payload

@@ -17,7 +17,9 @@ Execution needs `--execute`. `--yes` only answers an interactive confirmation.
 The prompt appears only for human-readable execution when stdin and stdout are
 terminals. The snapshot-bound preview and prompt go to stderr. JSON and piped
 execution do not prompt. A direct mutation is attempted once, without mutation
-retry. An uncertain result needs investigation and read-back, not blind replay.
+retry. A response that lacks exactly one resource or a matching non-empty ID, or
+that carries provider validation errors, is reported UNCERTAIN with exit 1. An
+uncertain result needs investigation and read-back, not blind replay.
 
 Invoice batches seal member plans and tenant provenance into a manifest. One
 confirmation binds the manifest digest. After confirmation and snapshot checks,

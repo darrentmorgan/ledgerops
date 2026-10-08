@@ -31,7 +31,7 @@ fresh login. Do not relabel tokens or substitute another profile after a refusal
 | Object | `--json` returns one raw resource object | Live read; missing resources may refuse |
 | Report | `--json` returns the raw report object | Live read; do not infer success from absent output |
 | PDF | No JSON/CSV/TOON; these options explicitly refuse before the API | Live read; writes a file, or raw bytes with `--out -` |
-| Mutation | Versioned preview; execution returns one resource or null | Preview by default; `--execute` attempts one mutation |
+| Mutation | Versioned preview; execution returns one resource, or `null` with exit 1 when unverified | Preview by default; `--execute` attempts one mutation |
 | Batch | Versioned batch preview/result described below | Preview by default; execution once per member |
 | Local/auth | Human-readable messages; do not rely on JSON output | Local profile/token changes or browser authentication |
 | Target | JSON by default, with distinct envelopes below | No `--json` or `--execute`; explicit target-specific modes |
@@ -66,7 +66,11 @@ uncertainty; do not automatically replay a write.
 A direct JSON preview has `schemaVersion: "ledgerops.mutation-preview.v1"`,
 `operation`, `resource`, `profile`, `payloadDigest`, `payload` and
 `willDispatch: false`. Direct digests have a `sha256:` prefix. The executed direct
-JSON response is a resource object or null, not a receipt or preview envelope.
+JSON response is the one raw resource object Xero returned, not a receipt or preview
+envelope. A response that lacks exactly one resource or a non-empty ID (matching
+the target on updates), or that carries a provider validation failure, is
+UNCERTAIN: stdout is `null`, stderr explains, and the exit code is 1. The write may have happened; verify it in
+Xero before any retry.
 
 The batch preview uses the same versioned envelope with `operation: "batch-create"`.
 Its payload includes the manifest digest and every planned member. Batch manifest
