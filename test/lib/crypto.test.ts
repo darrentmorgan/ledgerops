@@ -162,6 +162,31 @@ describe('crypto key storage', () => {
     expect(Entry.store).toBeNull()
   })
 
+  it('names the unwritable file key path instead of keychain setup in file mode', async () => {
+    process.env[KEY_STORAGE_ENV] = 'file'
+    mkdirSync(FILE_KEY_PATH)
+
+    const error = await getOrCreateKey().catch(error_ => error_)
+    expect(error).toBeInstanceOf(EncryptionKeyError)
+    expect(error.message).toContain(FILE_KEY_PATH)
+    expect(error.message).not.toMatch(/secret service/)
+  })
+
+  it('points a stranded legacy file key at file-mode recovery', async () => {
+    process.env[KEY_STORAGE_ENV] = 'file'
+    const legacy = await getOrCreateKey()
+    writeFileSync(TOKEN_PATH, JSON.stringify({synthetic: {encrypted: 'synthetic-ciphertext'}}))
+    delete process.env[KEY_STORAGE_ENV]
+    const {Entry} = await import('@napi-rs/keyring')
+    Entry.failReads = true
+
+    await expect(getOrCreateKey()).rejects.toThrow(
+      /\.encryption-key left by an earlier version.*XERO_KEY_STORAGE=file.*XERO_KEYRING_FILE_BACKUP=1/,
+    )
+    process.env[KEY_STORAGE_ENV] = 'file'
+    expect((await getOrCreateKey()).equals(legacy)).toBe(true)
+  })
+
   it('writes file backup when XERO_KEYRING_FILE_BACKUP is enabled', async () => {
     process.env[FILE_BACKUP_ENV] = '1'
     await getOrCreateKey()

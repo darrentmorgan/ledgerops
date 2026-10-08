@@ -104,7 +104,7 @@ export async function getOrCreateKey(): Promise<Buffer> {
 
   if (hasEncryptedTokens()) {
     throw new EncryptionKeyError(
-      'Could not read the encryption key for cached tokens. Restore the original keychain session, opted-in file backup, or passphrase and salt. Changing storage settings does not recreate a missing key. If the key is lost, clear the affected cached tokens and log in again with the chosen storage settings. See README: Token storage.',
+      'Could not read the encryption key for cached tokens. Restore the original keychain session, opted-in file backup, or passphrase and salt. Changing storage settings does not recreate a missing key. An .encryption-key left by an earlier version can be recovered by setting XERO_KEY_STORAGE=file or XERO_KEYRING_FILE_BACKUP=1. If the key is lost, clear the affected cached tokens and log in again with the chosen storage settings. See README: Token storage.',
     )
   }
 
@@ -194,6 +194,12 @@ async function persistNewKey(key: Buffer, mode: KeyStorageMode): Promise<void> {
   }
 
   if (keyringOk || fileOk) return
+
+  if (mode === 'file') {
+    throw new EncryptionKeyError(
+      `Could not write the encryption key to ${fileKeyPath()} using XERO_KEY_STORAGE=file. Make sure the config directory is writable by this user and no other file or directory occupies that path. See README: Token storage.`,
+    )
+  }
 
   throw new EncryptionKeyError(
     `Could not store the encryption key using XERO_KEY_STORAGE=${mode}. On Linux/WSL/SSH, install and start an OS secret service (e.g. gnome-keyring with libsecret) accessible in this session. For headless setup, explicitly choose XERO_KEY_STORAGE=file or XERO_TOKEN_PASSPHRASE before login; auto mode also permits XERO_KEYRING_FILE_BACKUP=1. Keyring mode never writes a file key. See README: Token storage.`,

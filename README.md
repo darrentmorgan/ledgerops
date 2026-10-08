@@ -129,7 +129,9 @@ File storage or an opted-in backup puts the encryption key alongside the tokens;
 anyone who can read both can decrypt them. Passphrase recovery requires the
 original salt and passphrase. Changing storage settings does not migrate keys
 or recreate a missing key. If reading a key fails, first restore the
-original keychain session, permitted backup, or passphrase and salt. If the key
+original keychain session, permitted backup, or passphrase and salt. An
+`.encryption-key` left by an earlier version can be recovered by setting
+`XERO_KEY_STORAGE=file` or `XERO_KEYRING_FILE_BACKUP=1`. If the key
 is lost, back up private state, clear the affected cache with
 `ledgerops logout --profile <your-profile>`, and log in again with the chosen
 settings. Every cached profile using the lost key needs re-authentication; a new
