@@ -34,7 +34,7 @@ export default class ItemsUpdate extends BaseCommand {
       const fileData = this.readJsonFile(flags.file) as Record<string, unknown>
       const parsed = itemFileUpdateSchema.safeParse(fileData)
       if (!parsed.success) this.error(`Validation errors:\n${formatZodError(parsed.error)}`)
-      item = parsed.data as unknown as Item
+      item = fileData as unknown as Item
     } else {
       const parsed = itemUpdateSchema.safeParse({
         itemId: flags['item-id'],
