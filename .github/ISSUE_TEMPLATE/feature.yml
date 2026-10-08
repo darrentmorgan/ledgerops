@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest a reusable engine improvement.
+description: Suggest an improvement to LedgerOps CLI using synthetic examples.
 body:
   - type: markdown
     attributes:

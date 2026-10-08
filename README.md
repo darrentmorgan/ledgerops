@@ -1,6 +1,7 @@
 # LedgerOps
 
 [![CI](https://github.com/darrentmorgan/ledgerops/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/darrentmorgan/ledgerops/actions/workflows/ci.yml?query=branch%3Amain)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/darrentmorgan/ledgerops/badge)](https://scorecard.dev/viewer/?uri=github.com/darrentmorgan/ledgerops)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/darrentmorgan/ledgerops/blob/main/LICENSE)
 [![Node.js 24+](https://img.shields.io/badge/node-%3E%3D24-brightgreen.svg)](https://github.com/darrentmorgan/ledgerops/blob/main/package.json)
 
