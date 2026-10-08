@@ -26,6 +26,9 @@ npm install --global --ignore-scripts ./ledgerops-0.1.0.tgz
 ledgerops --help
 ```
 
+`npm pack` names the tarball `ledgerops-<version>.tgz` from the `version` in
+`package.json`; adjust the install line if the version differs from `0.1.0`.
+
 Confirm it works: `ledgerops --help` prints the command list without credentials
 or a Xero call. The package installs only `ledgerops`. Dependency installation
 may use the npm registry; `npm pack` creates a local file and does not publish.
@@ -58,7 +61,7 @@ in [Quick install](#quick-install) instead.
 Point the agent at the absolute path printed by this command:
 
 ```sh
-node -e 'console.log(process.cwd() + "/SKILL.md")'
+echo "$PWD/SKILL.md"
 ```
 
 In the agent's task instructions, ask it to read that [SKILL.md](SKILL.md) and
