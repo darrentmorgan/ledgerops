@@ -10,21 +10,68 @@ A command-line interface for the practical Xero API using PKCE OAuth and named
 connection profiles. Requires Node.js 24 or newer. This is an alpha; the version
 does not imply a published release.
 
-## Install and build
+## Quick install
 
-Clone this repository from GitHub and change into its directory, then run:
+Prerequisites: Git, Node.js 24+ and npm, with npm's global bin directory on your
+`PATH` and a writable global install location. LedgerOps is not published to npm;
+install the local tarball built from this repository:
 
 ```sh
+git clone https://github.com/darrentmorgan/ledgerops.git
+cd ledgerops
 npm ci
 npm run build
-node bin/run.js --help
-npm test
+npm pack
+npm install --global --ignore-scripts ./ledgerops-0.1.0.tgz
+ledgerops --help
 ```
 
-Use the built executable through Node, or create a local tarball with `npm pack`
-and install that file with npm. The package installs only `ledgerops`.
-Installation may use the npm registry. Packing does not publish.
+Confirm it works: `ledgerops --help` prints the command list without credentials
+or a Xero call. The package installs only `ledgerops`. Dependency installation
+may use the npm registry; `npm pack` creates a local file and does not publish.
+If you prefer to run from the checkout, use `node bin/run.js --help` after the
+build and replace `ledgerops` with `node bin/run.js` in the examples below.
+Run `npm test` from the checkout for the offline synthetic test suite.
 [CI and releases](docs/release.md) describes the checks every change runs.
+
+## Install for AI agents
+
+For Claude Code, Codex, Cursor or another agent with shell access, use Git,
+Node.js 24+ and npm. From a writable parent directory, these non-interactive
+steps install dependencies, build the CLI and verify it without global install
+permissions, credentials or Xero access. A private repository requires Git
+authentication to be configured beforehand; terminal Git prompts are disabled.
+
+```sh
+GIT_TERMINAL_PROMPT=0 git clone https://github.com/darrentmorgan/ledgerops.git
+cd ledgerops
+npm ci --no-audit --no-fund
+npm run build
+node bin/run.js --help
+node bin/run.js contacts list --help
+```
+
+Run subsequent commands from this checkout, replacing `ledgerops` in the command
+reference with `node bin/run.js`. For a global executable, use the tarball install
+in [Quick install](#quick-install) instead.
+
+Point the agent at the absolute path printed by this command:
+
+```sh
+node -e 'console.log(process.cwd() + "/SKILL.md")'
+```
+
+In the agent's task instructions, ask it to read that [SKILL.md](SKILL.md) and
+[AGENTS.md](AGENTS.md) before using the CLI; Claude Code should also read
+[CLAUDE.md](CLAUDE.md). Keep the checkout available: the skill links to repository
+docs, source and tests. The npm tarball does not include the skill or those guides,
+and this repository provides no separate agent-skill installer. Pointing at the
+file supplies instructions; it does not automatically register a skill in an agent.
+
+Installation and help checks do not authorise login or accounting operations.
+Login requires authorised browser PKCE OAuth. Before live calls, verify the
+organisation and use its explicit named profile as described below; obtain
+authority for each live write. Never change the default profile implicitly.
 
 ## First use
 
