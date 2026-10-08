@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {invoiceUpdateSchema, invoiceFileUpdateSchema, formatZodError} from '../../lib/validators.js'
 import type {Invoice, LineItem} from 'xero-node'
 
@@ -94,7 +95,7 @@ export default class InvoicesUpdate extends BaseCommand {
         const response = await xero.accountingApi.updateInvoice(tenantId, sealedInvoice.invoiceID, {
           invoices: [sealedInvoice],
         })
-        const resource = response.body.invoices?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'invoices')
         return {
           resource,
           resultLine: `Invoice updated: ${resource?.invoiceNumber} (${resource?.invoiceID})`,

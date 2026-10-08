@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {invoiceCreateSchema, invoiceFileCreateSchema, formatZodError} from '../../lib/validators.js'
 import {invoiceDeepLink, billDeepLink} from '../../lib/deeplinks.js'
 import {ensureContactNested} from '../../lib/file-data.js'
@@ -8,7 +9,7 @@ import {Invoice} from 'xero-node'
 import type {LineItem} from 'xero-node'
 
 interface CreatedInvoice {
-  resource: Record<string, unknown> | undefined
+  resource: Record<string, unknown>
   shortCode?: string
 }
 
@@ -139,16 +140,17 @@ export default class InvoicesCreate extends BaseCommand {
               const response = await xero.accountingApi.createInvoices(tenantId, {
                 invoices: [snapshot.payload as unknown as Invoice],
               })
+              const resource = checkDirectMutationResult(response, 'invoices')
               const shortCode = await this.getOrgShortCode(xero, tenantId)
               return {
-                resource: response.body.invoices?.[0] as Record<string, unknown> | undefined,
+                resource,
                 shortCode,
               }
             }),
         },
       )
     } catch (caught) {
-      this.error(caught instanceof Error ? caught.message : String(caught))
+      this.mutationError(caught, flags)
     }
 
     if (!outcome.dispatched || !outcome.response) {

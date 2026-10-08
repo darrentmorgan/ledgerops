@@ -5,6 +5,8 @@ import {afterAll, beforeEach, describe, expect, it, vi} from 'vitest'
 import TrackingCategoriesCreate from '../../src/commands/tracking/categories/create.js'
 import TrackingCategoriesUpdate from '../../src/commands/tracking/categories/update.js'
 
+import {mutationCommandBoundaryTests} from '../support/mutation-command-boundary.js'
+
 const TENANT = 'synthetic-tracking-tenant-must-not-echo'
 const CLIENT_ID = 'synthetic-tracking-client-must-not-echo'
 const CATEGORY_ID = 'synthetic-tracking-category-133'
@@ -152,17 +154,16 @@ describe.each([
     },
     line: 'Tracking category updated: Synthetic Division',
   },
-])('tracking categories $label shared boundary', ({command, apiMethod, args, result, line}) => {
-  it('previews with zero dispatch, including --yes alone', async () => {
-    for (const extra of [[], ['--yes']]) {
-      apiMethod.mockClear()
-      const output = await run(command, [...args, ...extra])
-      expect(output.error).toBeUndefined()
-      expect(apiMethod).not.toHaveBeenCalled()
-      expect(output.stdout).toContain('PREVIEW')
-      expect(output.stdout).not.toContain(TENANT)
-      expect(output.stdout).not.toContain(CLIENT_ID)
-    }
+])('tracking categories $label shared boundary', ({label, command, apiMethod, args, result, line}) => {
+  mutationCommandBoundaryTests({
+    command,
+    apiMethod,
+    args,
+    expectedPreviewLiteral: `${label} tracking-categories`,
+    expectedResultLine: line,
+    executeResponse: result,
+    run,
+    interactiveCalls: () => prompt.calls,
   })
 
   it('dispatches exactly once with --execute and --execute --yes', async () => {
@@ -173,16 +174,6 @@ describe.each([
       expect(apiMethod).toHaveBeenCalledTimes(1)
       expect(output.stdout).toContain(line)
     }
-  })
-
-  it('dispatches piped JSON once without prompting or mixed output', async () => {
-    apiMethod.mockResolvedValue(result)
-    const output = await run(command, ['--json', ...args, '--execute'])
-    expect(output.error).toBeUndefined()
-    expect(apiMethod).toHaveBeenCalledTimes(1)
-    expect(prompt.calls).toHaveLength(0)
-    expect(JSON.parse(output.stdout)).toEqual(expect.objectContaining({trackingCategoryID: CATEGORY_ID}))
-    expect(output.stdout).not.toContain('PREVIEW')
   })
 })
 

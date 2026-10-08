@@ -190,6 +190,7 @@ describe('credit-notes create shared command boundary', () => {
   mutationCommandBoundaryTests({
     command: CreditNotesCreate,
     apiMethod: api.createCreditNotes,
+    optionalLookup: api.getOrganisations,
     fixture: createFixture,
     expectedPreviewLiteral: 'create credit-notes',
     expectedResultLine: `Credit note created: CN-0128 (${CREATE_ID})`,

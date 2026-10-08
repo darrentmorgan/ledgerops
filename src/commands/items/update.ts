@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {itemUpdateSchema, itemFileUpdateSchema, formatZodError} from '../../lib/validators.js'
 import type {Item} from 'xero-node'
 
@@ -73,7 +74,7 @@ export default class ItemsUpdate extends BaseCommand {
       async (xero, tenantId, snapshot) => {
         const sealedItem = snapshot.payload as unknown as Item & {itemID: string}
         const response = await xero.accountingApi.updateItem(tenantId, sealedItem.itemID, {items: [sealedItem]})
-        const resource = response.body.items?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'items')
         return {resource, resultLine: `Item updated: ${resource?.code} - ${resource?.name} (${resource?.itemID})`}
       },
     )

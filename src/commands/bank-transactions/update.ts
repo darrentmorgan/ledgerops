@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {bankTransactionUpdateSchema, bankTransactionFileUpdateSchema, formatZodError} from '../../lib/validators.js'
 import {BankTransaction} from 'xero-node'
 
@@ -83,7 +84,7 @@ export default class BankTransactionsUpdate extends BaseCommand {
         const response = await xero.accountingApi.updateBankTransaction(tenantId, transaction.bankTransactionID, {
           bankTransactions: [transaction],
         })
-        const resource = response.body.bankTransactions?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'bank-transactions')
         return {resource, resultLine: `Bank transaction updated: ${resource?.bankTransactionID}`}
       },
     )

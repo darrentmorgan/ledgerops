@@ -180,6 +180,7 @@ describe('contacts create shared command boundary', () => {
   mutationCommandBoundaryTests({
     command: ContactsCreate,
     apiMethod: api.createContacts,
+    optionalLookup: api.getOrganisations,
     fixture: createFixture,
     expectedPreviewLiteral: 'create contacts',
     expectedResultLine: `Contact created: Synthetic Contact 127 (${CONTACT_ID})`,

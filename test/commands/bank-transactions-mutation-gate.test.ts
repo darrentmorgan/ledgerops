@@ -194,6 +194,7 @@ describe('bank-transactions create shared command boundary', () => {
   mutationCommandBoundaryTests({
     command: BankTransactionsCreate,
     apiMethod: api.createBankTransactions,
+    optionalLookup: api.getOrganisations,
     fixture: createFixture,
     expectedPreviewLiteral: 'create bank-transactions',
     expectedResultLine: `Bank transaction created: ${CREATE_ID}`,

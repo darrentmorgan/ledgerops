@@ -187,6 +187,7 @@ describe('quotes create shared command boundary', () => {
   mutationCommandBoundaryTests({
     command: QuotesCreate,
     apiMethod: api.createQuotes,
+    optionalLookup: api.getOrganisations,
     fixture: createFixture,
     expectedPreviewLiteral: 'create quotes',
     expectedResultLine: `Quote created: QU-0132 (${CREATE_ID})`,

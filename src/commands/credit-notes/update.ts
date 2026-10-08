@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {creditNoteUpdateSchema, creditNoteFileUpdateSchema, formatZodError} from '../../lib/validators.js'
 import type {CreditNote, LineItem} from 'xero-node'
 
@@ -86,7 +87,7 @@ export default class CreditNotesUpdate extends BaseCommand {
         const response = await xero.accountingApi.updateCreditNote(tenantId, sealedCreditNote.creditNoteID, {
           creditNotes: [sealedCreditNote],
         })
-        const resource = response.body.creditNotes?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'credit-notes')
         return {
           resource,
           resultLine: `Credit note updated: ${resource?.creditNoteNumber ?? 'Draft'} (${resource?.creditNoteID})`,

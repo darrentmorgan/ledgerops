@@ -5,6 +5,8 @@ import {afterAll, beforeEach, describe, expect, it, vi} from 'vitest'
 import TrackingOptionsCreate from '../../src/commands/tracking/options/create.js'
 import TrackingOptionsUpdate from '../../src/commands/tracking/options/update.js'
 
+import {mutationCommandBoundaryTests} from '../support/mutation-command-boundary.js'
+
 const TENANT = 'synthetic-option-tenant-must-not-echo'
 const CLIENT_ID = 'synthetic-option-client-must-not-echo'
 const CATEGORY_ID = 'synthetic-tracking-category-134'
@@ -157,17 +159,16 @@ describe.each([
     result: {body: {options: [{trackingOptionID: OPTION_ID, name: 'Synthetic Territory', status: 'ARCHIVED'}]}},
     line: 'Tracking option updated: Synthetic Territory',
   },
-])('tracking options $label shared boundary', ({command, apiMethod, args, result, line}) => {
-  it('previews with zero dispatch, including --yes alone', async () => {
-    for (const extra of [[], ['--yes']]) {
-      apiMethod.mockClear()
-      const output = await run(command, [...args, ...extra])
-      expect(output.error).toBeUndefined()
-      expect(apiMethod).not.toHaveBeenCalled()
-      expect(output.stdout).toContain('PREVIEW')
-      expect(output.stdout).not.toContain(TENANT)
-      expect(output.stdout).not.toContain(CLIENT_ID)
-    }
+])('tracking options $label shared boundary', ({label, command, apiMethod, args, result, line}) => {
+  mutationCommandBoundaryTests({
+    command,
+    apiMethod,
+    args,
+    expectedPreviewLiteral: `${label} tracking-options`,
+    expectedResultLine: line,
+    executeResponse: result,
+    run,
+    interactiveCalls: () => prompt.calls,
   })
 
   it('dispatches exactly one mutation with --execute and --execute --yes', async () => {
@@ -178,16 +179,6 @@ describe.each([
       expect(apiMethod).toHaveBeenCalledTimes(1)
       expect(output.stdout).toContain(line)
     }
-  })
-
-  it('dispatches piped JSON once without prompting or mixed output', async () => {
-    apiMethod.mockResolvedValue(result)
-    const output = await run(command, ['--json', ...args, '--execute'])
-    expect(output.error).toBeUndefined()
-    expect(apiMethod).toHaveBeenCalledTimes(1)
-    expect(prompt.calls).toHaveLength(0)
-    expect(JSON.parse(output.stdout)).toEqual(expect.objectContaining({trackingOptionID: OPTION_ID}))
-    expect(output.stdout).not.toContain('PREVIEW')
   })
 })
 

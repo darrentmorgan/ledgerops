@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {creditNoteCreateSchema, creditNoteFileCreateSchema, formatZodError} from '../../lib/validators.js'
 import {creditNoteDeepLink} from '../../lib/deeplinks.js'
 import {ensureContactNested} from '../../lib/file-data.js'
@@ -93,7 +94,7 @@ export default class CreditNotesCreate extends BaseCommand {
         const response = await xero.accountingApi.createCreditNotes(tenantId, {
           creditNotes: [snapshot.payload as unknown as CreditNote],
         })
-        const resource = response.body.creditNotes?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'credit-notes')
         const shortCode = await this.getOrgShortCode(xero, tenantId)
         const link =
           shortCode && resource?.creditNoteID

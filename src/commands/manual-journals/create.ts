@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {journalFileCreateSchema, formatZodError} from '../../lib/validators.js'
 import type {ManualJournal} from 'xero-node'
 
@@ -45,7 +46,7 @@ export default class ManualJournalsCreate extends BaseCommand {
         const response = await xero.accountingApi.createManualJournals(tenantId, {
           manualJournals: [snapshot.payload as unknown as ManualJournal],
         })
-        const resource = response.body.manualJournals?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'manual-journals')
         return {resource, resultLine: `Manual journal created: ${resource?.manualJournalID}`}
       },
     )

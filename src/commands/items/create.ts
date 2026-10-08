@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {itemCreateSchema, itemFileCreateSchema, formatZodError} from '../../lib/validators.js'
 import type {Item} from 'xero-node'
 
@@ -67,7 +68,7 @@ export default class ItemsCreate extends BaseCommand {
         const response = await xero.accountingApi.createItems(tenantId, {
           items: [snapshot.payload as unknown as Item],
         })
-        const resource = response.body.items?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'items')
         return {resource, resultLine: `Item created: ${resource?.code} - ${resource?.name} (${resource?.itemID})`}
       },
     )
