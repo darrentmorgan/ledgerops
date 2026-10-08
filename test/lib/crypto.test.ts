@@ -17,13 +17,17 @@ vi.mock('@napi-rs/keyring', () => ({
   Entry: class MockEntry {
     static store: string | null = null
     static constructedWith: Array<{service: string; account: string}> = []
+    static failReads = false
+    static failWrites = false
     constructor(service: string, account: string) {
       MockEntry.constructedWith.push({service, account})
     }
     getPassword() {
+      if (MockEntry.failReads) throw new Error('Synthetic keyring read failure')
       return MockEntry.store
     }
     setPassword(value: string) {
+      if (MockEntry.failWrites) throw new Error('Synthetic keyring write failure')
       MockEntry.store = value
     }
     deletePassword() {
@@ -59,6 +63,8 @@ describe('crypto key storage', () => {
     const {Entry} = await import('@napi-rs/keyring')
     Entry.store = null
     Entry.constructedWith = []
+    Entry.failReads = false
+    Entry.failWrites = false
   })
 
   afterEach(() => {
@@ -72,6 +78,88 @@ describe('crypto key storage', () => {
     expect(Entry.store).toBe(key.toString('base64'))
     const roundTrip = encrypt('secret', key)
     expect(decrypt(roundTrip, key)).toBe('secret')
+  })
+
+  it.each(['auto', 'keyring'])(
+    'refuses %s storage when keyring reads and writes fail without creating a file key',
+    async mode => {
+      if (mode === 'keyring') process.env[KEY_STORAGE_ENV] = mode
+      const {Entry} = await import('@napi-rs/keyring')
+      Entry.failReads = true
+      Entry.failWrites = true
+
+      await expect(getOrCreateKey()).rejects.toBeInstanceOf(EncryptionKeyError)
+      expect(existsSync(FILE_KEY_PATH)).toBe(false)
+      expect(Entry.store).toBeNull()
+    },
+  )
+
+  it('never falls back to a file in keyring mode even when file backup is enabled', async () => {
+    process.env[KEY_STORAGE_ENV] = 'keyring'
+    process.env[FILE_BACKUP_ENV] = '1'
+    const {Entry} = await import('@napi-rs/keyring')
+    Entry.failWrites = true
+
+    await expect(getOrCreateKey()).rejects.toBeInstanceOf(EncryptionKeyError)
+    expect(existsSync(FILE_KEY_PATH)).toBe(false)
+  })
+
+  it('gives actionable setup guidance when no permitted storage works', async () => {
+    const {Entry} = await import('@napi-rs/keyring')
+    Entry.failWrites = true
+    await expect(getOrCreateKey()).rejects.toThrow(
+      /XERO_KEY_STORAGE=auto.*XERO_KEY_STORAGE=file.*XERO_TOKEN_PASSPHRASE.*README: Token storage/,
+    )
+    expect(existsSync(FILE_KEY_PATH)).toBe(false)
+  })
+
+  it('recovers an opted-in auto file key when keyring reads and writes fail', async () => {
+    process.env[FILE_BACKUP_ENV] = '1'
+    const {Entry} = await import('@napi-rs/keyring')
+    Entry.failReads = true
+    Entry.failWrites = true
+
+    const first = await getOrCreateKey()
+    expect(readFileSync(FILE_KEY_PATH, 'utf-8')).toBe(first.toString('base64'))
+    writeFileSync(TOKEN_PATH, JSON.stringify({synthetic: {encrypted: 'synthetic-ciphertext'}}))
+    expect((await getOrCreateKey()).equals(first)).toBe(true)
+    expect(Entry.store).toBeNull()
+  })
+
+  it('does not read an existing file key in keyring mode even with backup enabled', async () => {
+    process.env[KEY_STORAGE_ENV] = 'file'
+    await getOrCreateKey()
+    const storedFile = readFileSync(FILE_KEY_PATH, 'utf-8')
+    writeFileSync(TOKEN_PATH, JSON.stringify({synthetic: {encrypted: 'synthetic-ciphertext'}}))
+    process.env[KEY_STORAGE_ENV] = 'keyring'
+    process.env[FILE_BACKUP_ENV] = '1'
+    const {Entry} = await import('@napi-rs/keyring')
+    Entry.failReads = true
+    Entry.failWrites = true
+
+    await expect(getOrCreateKey()).rejects.toBeInstanceOf(EncryptionKeyError)
+    expect(readFileSync(FILE_KEY_PATH, 'utf-8')).toBe(storedFile)
+  })
+
+  it('does not mirror a successful keyring write in keyring mode with backup enabled', async () => {
+    process.env[KEY_STORAGE_ENV] = 'keyring'
+    process.env[FILE_BACKUP_ENV] = '1'
+    const key = await getOrCreateKey()
+    const {Entry} = await import('@napi-rs/keyring')
+    expect(Entry.store).toBe(key.toString('base64'))
+    expect(existsSync(FILE_KEY_PATH)).toBe(false)
+  })
+
+  it.each(['file', 'auto'])('refuses %s when its permitted file storage is unwritable', async mode => {
+    process.env[KEY_STORAGE_ENV] = mode
+    process.env[FILE_BACKUP_ENV] = '1'
+    const {Entry} = await import('@napi-rs/keyring')
+    Entry.failWrites = true
+    // A directory at the key path reliably prevents file writes on every platform.
+    mkdirSync(FILE_KEY_PATH)
+
+    await expect(getOrCreateKey()).rejects.toBeInstanceOf(EncryptionKeyError)
+    expect(Entry.store).toBeNull()
   })
 
   it('writes file backup when XERO_KEYRING_FILE_BACKUP is enabled', async () => {
