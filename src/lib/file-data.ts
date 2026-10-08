@@ -64,6 +64,14 @@ export function ensureInvoiceNested(data: FileData): FileData {
     const {invoiceID: _a, invoiceId: _b, ...rest} = data
     return {...rest, invoice: {invoiceID: invoiceId}}
   }
+  if (typeof data.invoiceNumber === 'string') {
+    const {invoiceNumber, ...rest} = data
+    return {...rest, invoice: {invoiceNumber}}
+  }
+  if (!data.creditNote && typeof data.creditNoteNumber === 'string') {
+    const {creditNoteNumber, ...rest} = data
+    return {...rest, creditNote: {creditNoteNumber}}
+  }
   return data
 }
 
@@ -76,6 +84,10 @@ export function ensureAccountNested(data: FileData): FileData {
   if (accountId) {
     const {accountID: _a, accountId: _b, ...rest} = data
     return {...rest, account: {accountID: accountId}}
+  }
+  if (typeof data.code === 'string') {
+    const {code, ...rest} = data
+    return {...rest, account: {code}}
   }
   return data
 }

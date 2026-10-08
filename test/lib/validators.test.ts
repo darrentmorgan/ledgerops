@@ -6,6 +6,8 @@ import {
   contactCreateSchema,
   paymentCreateSchema,
   journalCreateSchema,
+  itemCreateSchema,
+  quoteCreateSchema,
   formatZodError,
   contactFileCreateSchema,
   contactFileUpdateSchema,
@@ -404,6 +406,7 @@ describe('bankTransactionFileUpdateSchema', () => {
 describe('creditNoteFileCreateSchema', () => {
   it('validates required lineItems', () => {
     const data = {
+      type: 'ACCRECCREDIT',
       contact: {contactID: 'c-1'},
       lineItems: [{description: 'Refund', quantity: 1, unitAmount: 100}],
     }
@@ -627,6 +630,199 @@ describe('trackingOptionsFileUpdateSchema', () => {
     expect(result.success).toBe(true)
     if (result.success) {
       expect((result.data.options[0] as Record<string, unknown>).sortOrder).toBe(1)
+    }
+  })
+})
+
+describe('finite amounts and actual calendar dates', () => {
+  it.each(['2024-02-29', '2000-02-29', '2026-04-30'])('accepts calendar date %s', date => {
+    expect(dateSchema.safeParse(date).success).toBe(true)
+  })
+  it.each([
+    '2026-02-31',
+    '2026-02-29',
+    '1900-02-29',
+    '2026-04-31',
+    '2026-00-01',
+    '2026-13-01',
+    '2026-01-00',
+    '0000-01-01',
+  ])('refuses impossible calendar date %s', date => {
+    expect(dateSchema.safeParse(date).success).toBe(false)
+  })
+  it.each([Infinity, -Infinity, NaN])('refuses nonfinite flag value %s', value => {
+    expect(paymentCreateSchema.safeParse({invoiceId: 'inv', accountId: 'bank', amount: value}).success).toBe(false)
+    const line = {description: 'Synthetic', quantity: 1, unitAmount: 1, accountCode: '200', taxType: 'NONE'}
+    for (const field of ['quantity', 'unitAmount']) {
+      expect(lineItemSchema.safeParse({...line, [field]: value}).success).toBe(false)
+    }
+    expect(
+      journalCreateSchema.safeParse({
+        narration: 'Synthetic',
+        manualJournalLines: [
+          {accountCode: '200', lineAmount: value},
+          {accountCode: '300', lineAmount: 1},
+        ],
+      }).success,
+    ).toBe(false)
+    for (const field of ['salesDetails', 'purchaseDetails']) {
+      expect(itemCreateSchema.safeParse({code: 'ITEM', name: 'Synthetic', [field]: {unitPrice: value}}).success).toBe(
+        false,
+      )
+    }
+  })
+  it('checks quote flag dates too', () => {
+    expect(
+      quoteCreateSchema.safeParse({
+        contactId: 'contact',
+        date: '2026-02-31',
+        lineItems: [{description: 'Synthetic', quantity: 1, unitAmount: 1, accountCode: '200', taxType: 'NONE'}],
+      }).success,
+    ).toBe(false)
+  })
+})
+
+describe('minimum file relationships and line values', () => {
+  const documents = [
+    {schema: invoiceFileCreateSchema, payload: {type: 'ACCREC'}},
+    {schema: quoteFileCreateSchema, payload: {}},
+    {schema: creditNoteFileCreateSchema, payload: {type: 'ACCRECCREDIT'}},
+    {schema: bankTransactionFileCreateSchema, payload: {type: 'SPEND', bankAccount: {code: '090'}}},
+  ]
+  for (const {schema, payload} of documents) {
+    it(`requires contact and meaningful lines for ${JSON.stringify(payload)}`, () => {
+      const good = {...payload, contact: {name: 'Synthetic'}, lineItems: [{description: 'Note only'}]}
+      expect(schema.safeParse(good).success).toBe(true)
+      for (const contact of [undefined, null, {}, [], 'contact', {contactID: null}, {contactID: ' '}, {name: ''}]) {
+        expect(schema.safeParse({...good, contact}).success).toBe(false)
+      }
+      for (const line of [{}, null, [], {description: ''}, {quantity: 1, unitAmount: 10}]) {
+        expect(schema.safeParse({...good, lineItems: [line]}).success).toBe(false)
+      }
+      expect(schema.safeParse({...good, lineItems: [{itemCode: 'ITEM'}]}).success).toBe(true)
+      expect(schema.safeParse({...good, contact: undefined, contactId: 'contact'}).success).toBe(true)
+      // A valid alias cannot hide a malformed nested relationship.
+      expect(schema.safeParse({...good, contact: null, contactId: 'contact'}).success).toBe(false)
+    })
+  }
+  it.each(['invoice', 'creditNote', 'prepayment', 'overpayment', 'account'])(
+    'refuses malformed payment relationship %s even beside valid relationships',
+    field => {
+      const good = {amount: 1, invoice: {invoiceID: 'inv'}, account: {code: '090'}}
+      for (const malformed of [null, {}, [], 1, 'id']) {
+        expect(paymentFileCreateSchema.safeParse({...good, [field]: malformed}).success).toBe(false)
+      }
+    },
+  )
+  it('requires both payment account and a supported payable relationship', () => {
+    expect(paymentFileCreateSchema.safeParse({amount: 1}).success).toBe(false)
+    expect(paymentFileCreateSchema.safeParse({amount: 1, account: {code: '090'}}).success).toBe(false)
+    expect(paymentFileCreateSchema.safeParse({amount: 1, invoice: {invoiceID: 'inv'}}).success).toBe(false)
+    for (const relationship of [
+      {invoice: {invoiceID: 'inv'}},
+      {invoice: {invoiceNumber: 'INV-1'}},
+      {creditNote: {creditNoteID: 'credit'}},
+      {creditNote: {creditNoteNumber: 'CN-1'}},
+      {prepayment: {prepaymentID: 'pre'}},
+      {overpayment: {overpaymentID: 'over'}},
+      {invoiceId: 'inv'},
+      {invoiceNumber: 'INV-1'},
+      {creditNoteNumber: 'CN-1'},
+    ]) {
+      const payload = {amount: 1, account: {code: '090', name: 'Synthetic bank'}, ...relationship}
+      expect(paymentFileCreateSchema.parse(payload)).toEqual(payload)
+    }
+  })
+  it('validates fields supplied by partial updates without requiring omitted relationships', () => {
+    for (const [schema, id] of [
+      [invoiceFileUpdateSchema, 'invoiceID'],
+      [quoteFileUpdateSchema, 'quoteID'],
+      [creditNoteFileUpdateSchema, 'creditNoteID'],
+      [bankTransactionFileUpdateSchema, 'bankTransactionID'],
+    ] as const) {
+      expect(schema.safeParse({[id]: 'existing', status: 'VOIDED'}).success).toBe(true)
+      for (const changes of [
+        {contact: null},
+        {contact: {}},
+        {lineItems: [{}]},
+        {lineItems: null},
+        {lineItems: []},
+        {date: '2026-02-31'},
+        {lineItems: [{description: 'Synthetic', taxAmount: Infinity}]},
+      ]) {
+        expect(schema.safeParse({[id]: 'existing', ...changes}).success).toBe(false)
+      }
+      const extended = {
+        [id]: 'existing',
+        contact: {name: 'Synthetic'},
+        date: '2024-02-29',
+        lineItems: [{lineItemID: 'line', tracking: [{name: 'Region', option: 'East'}]}],
+        url: 'https://example.com',
+      }
+      expect(schema.parse(extended)).toEqual(extended)
+    }
+  })
+  it('checks nested SDK numeric extensions without removing them', () => {
+    const good = {
+      type: 'ACCREC',
+      contact: {name: 'Synthetic'},
+      date: '2024-02-29',
+      expectedPaymentDate: '2024-03-01T00:00:00',
+      currencyRate: 1.2,
+      brandingThemeID: 'theme',
+      lineItems: [
+        {
+          itemCode: 'ITEM',
+          quantity: 0,
+          unitAmount: -10,
+          taxAmount: -1,
+          discountRate: 5,
+          tracking: [{name: 'Region', option: 'East'}],
+          taxBreakdown: [{taxAmount: 2}],
+        },
+      ],
+    }
+    expect(invoiceFileCreateSchema.parse(good)).toEqual(good)
+    expect(invoiceFileCreateSchema.safeParse({...good, currencyRate: Infinity}).success).toBe(false)
+    expect(invoiceFileCreateSchema.safeParse({...good, expectedPaymentDate: '2026-02-31T00:00:00'}).success).toBe(false)
+    expect(
+      invoiceFileCreateSchema.safeParse({
+        ...good,
+        lineItems: [{description: 'Synthetic', taxBreakdown: [{taxAmount: Infinity}]}],
+      }).success,
+    ).toBe(false)
+    const overflow = JSON.parse('{"amount":1e400,"invoice":{"invoiceID":"inv"},"account":{"code":"090"}}')
+    expect(paymentFileCreateSchema.safeParse(overflow).success).toBe(false)
+  })
+  it('requires journal amounts and account relationships while preserving extensions', () => {
+    const good = {
+      narration: 'Synthetic',
+      journalLines: [
+        {lineAmount: 1, accountID: 'account', tracking: [{name: 'Region', option: 'East'}]},
+        {lineAmount: -1, accountCode: '200'},
+        {isBlank: true},
+      ],
+    }
+    expect(journalFileCreateSchema.parse(good)).toEqual(good)
+    for (const line of [{}, null, {accountCode: '200'}, {lineAmount: 1}, {lineAmount: Infinity, accountCode: '200'}]) {
+      expect(journalFileCreateSchema.safeParse({...good, journalLines: [line, good.journalLines[1]]}).success).toBe(
+        false,
+      )
+      expect(
+        journalFileUpdateSchema.safeParse({
+          ...good,
+          manualJournalID: 'journal',
+          journalLines: [line, good.journalLines[1]],
+        }).success,
+      ).toBe(false)
+    }
+  })
+  it('checks item prices without requiring them for account-only changes', () => {
+    for (const schema of [itemFileCreateSchema, itemFileUpdateSchema]) {
+      const good = {code: 'ITEM', name: 'Synthetic', itemID: 'item', purchaseDetails: {cOGSAccountCode: '500'}}
+      expect(schema.parse(good)).toEqual(good)
+      expect(schema.safeParse({...good, salesDetails: {unitPrice: Infinity}}).success).toBe(false)
+      expect(schema.safeParse({...good, purchaseDetails: null}).success).toBe(false)
     }
   })
 })
