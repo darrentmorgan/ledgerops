@@ -66,11 +66,11 @@ uncertainty; do not automatically replay a write.
 A direct JSON preview has `schemaVersion: "ledgerops.mutation-preview.v1"`,
 `operation`, `resource`, `profile`, `payloadDigest`, `payload` and
 `willDispatch: false`. Direct digests have a `sha256:` prefix. The executed direct
-JSON response is the one raw resource object Xero returned, not a receipt or preview
+JSON response is the one raw resource object the provider returned, not a receipt or preview
 envelope. A response that lacks exactly one resource or a non-empty ID (matching
 the target on updates), or that carries a provider validation failure, is
-UNCERTAIN: stdout is `null`, stderr explains, and the exit code is 1. The write may have happened; verify it in
-Xero before any retry.
+UNCERTAIN: stdout is `null`, stderr explains, and the exit code is 1. The write may
+have happened; verify it with a live read before any retry.
 
 The batch preview uses the same versioned envelope with `operation: "batch-create"`.
 Its payload includes the manifest digest and every planned member. Batch manifest
