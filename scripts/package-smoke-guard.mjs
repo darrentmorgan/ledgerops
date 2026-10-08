@@ -1,33 +1,15 @@
 // Preloaded only into the installed CLI, never into npm's dependency installation.
+// Network access is refused separately by scripts/release-check/network-forbidden.cjs.
 
-import dns from 'node:dns'
-import dnsPromises from 'node:dns/promises'
 import fs from 'node:fs'
 import fsPromises from 'node:fs/promises'
-import http from 'node:http'
-import https from 'node:https'
 import {registerHooks, syncBuiltinESMExports} from 'node:module'
-import net from 'node:net'
-import tls from 'node:tls'
 import {fileURLToPath} from 'node:url'
 
 const append = fs.appendFileSync.bind(fs)
 function refuse(kind) {
   append(process.env.LEDGEROPS_SMOKE_ATTEMPTS, `${kind}\n`)
   throw new Error(`Installed-package help attempted ${kind}`)
-}
-
-globalThis.fetch = () => refuse('network:fetch')
-for (const [module, methods] of [
-  [http, ['request', 'get']],
-  [https, ['request', 'get']],
-  [net, ['connect', 'createConnection']],
-  [net.Socket.prototype, ['connect']],
-  [tls, ['connect']],
-  [dns, ['lookup', 'resolve']],
-  [dnsPromises, ['lookup', 'resolve']],
-]) {
-  for (const method of methods) module[method] = () => refuse(`network:${method}`)
 }
 
 function isCredentialPath(value) {
