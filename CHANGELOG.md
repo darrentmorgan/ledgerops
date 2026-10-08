@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Report commands keep every provider column, including comparative
+  `--periods` amounts, section and summary rows, and zero values. `--csv` and
+  `--toon` write one complete document to stdout with no report title; the
+  title and date print only in table output. `--json` still returns the raw
+  report, and a missing report now fails instead of printing nothing.
+
 ## 0.1.0: ledgerops becomes the primary command
 
 - The package installs the single `ledgerops` executable.
