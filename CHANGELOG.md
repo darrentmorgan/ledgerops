@@ -7,6 +7,15 @@
   `--toon` write one complete document to stdout with no report title; the
   title and date print only in table output. `--json` still returns the raw
   report, and a missing report now fails instead of printing nothing.
+- Mutation payloads are checked before preview and refused with zero dispatch
+  when an amount or quantity is not finite (including `Infinity` and JSON
+  exponent overflow) or a date is not a real calendar date. `--file` payloads
+  must also carry the resource's minimum relationships: a contact for invoice,
+  quote, credit-note and bank-transaction creates; a credit-note `type`; a bank
+  account for bank transactions; an account and an invoice, credit note,
+  prepayment or overpayment for payments; a description or `itemCode` on each
+  line; and an amount with an account on each non-blank journal line. Other
+  SDK fields still pass through unchanged.
 
 ## 0.1.0: ledgerops becomes the primary command
 
