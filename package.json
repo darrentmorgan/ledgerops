@@ -48,7 +48,8 @@
     "format:write": "biome format --write .",
     "lint": "biome lint --error-on-warnings .",
     "typecheck": "tsc --noEmit",
-    "pack:check": "node scripts/check-pack.mjs"
+    "pack:check": "node scripts/check-pack.mjs",
+    "pack:smoke": "node scripts/package-smoke.mjs"
   },
   "oclif": {
     "bin": "ledgerops",

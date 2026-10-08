@@ -58,6 +58,7 @@ npm test
 npm run inventory:check
 npm audit --omit=dev
 npm run pack:check
+npm run pack:smoke
 git diff --check   # no whitespace errors
 ```
 

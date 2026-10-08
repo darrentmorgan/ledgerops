@@ -3,7 +3,9 @@
 Every pull request runs `CI / Node 24 / ubuntu-latest`, `CI / Node 24 / macos-latest`,
 and `CI / Node 24 / windows-latest`. Each checks formatting, lint (including warnings),
 types, build, offline tests, generated inventory, production dependency audit, and
-package contents including upstream attribution. Actions are pinned to full commit IDs.
+package contents including upstream attribution, then installs the packed tarball into
+an isolated prefix and runs its `ledgerops --help` and `invoices create --help` with
+credential and network access refused. Actions are pinned to full commit IDs.
 Dependabot groups npm and GitHub Actions updates separately with a seven-day cooldown.
 
 Release runs only for `v*` tags and requires the tag to equal `v` plus the package version.
