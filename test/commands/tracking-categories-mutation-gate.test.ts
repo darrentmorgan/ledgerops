@@ -167,6 +167,16 @@ describe.each([
     interactiveCalls: () => prompt.calls,
   })
 
+  it('previews without echoing the tenant or client ID', async () => {
+    for (const extra of [[], ['--yes']]) {
+      const output = await run(command, [...args, ...extra])
+      expect(output.error).toBeUndefined()
+      expect(output.stdout).toContain('PREVIEW')
+      expect(output.stdout).not.toContain(TENANT)
+      expect(output.stdout).not.toContain(CLIENT_ID)
+    }
+  })
+
   it('dispatches exactly once with --execute and --execute --yes', async () => {
     for (const extra of [['--execute'], ['--execute', '--yes']]) {
       apiMethod.mockReset().mockResolvedValue(result)
