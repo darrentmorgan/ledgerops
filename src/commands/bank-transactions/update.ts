@@ -84,7 +84,7 @@ export default class BankTransactionsUpdate extends BaseCommand {
         const response = await xero.accountingApi.updateBankTransaction(tenantId, transaction.bankTransactionID, {
           bankTransactions: [transaction],
         })
-        const resource = checkDirectMutationResult(response, 'bank-transactions')
+        const resource = checkDirectMutationResult(response, 'bank-transactions', transaction.bankTransactionID)
         return {resource, resultLine: `Bank transaction updated: ${resource?.bankTransactionID}`}
       },
     )

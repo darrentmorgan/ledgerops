@@ -197,6 +197,7 @@ describe('contacts update shared command boundary', () => {
     fixture: updateFixture,
     expectedPreviewLiteral: 'update contacts',
     expectedResultLine: `Contact updated: Synthetic Contact Updated (${CONTACT_ID})`,
+    targetsExistingResource: true,
     executeResponse: {
       body: {contacts: [{contactID: CONTACT_ID, name: 'Synthetic Contact Updated', contactStatus: 'ARCHIVED'}]},
     },

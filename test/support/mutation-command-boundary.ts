@@ -19,6 +19,7 @@ export interface MutationCommandBoundarySpec {
   readonly expectedResultLine: string
   readonly executeResponse: unknown
   readonly optionalLookup?: Mock
+  readonly targetsExistingResource?: boolean
   readonly run: (command: CommandClass, args: readonly string[]) => Promise<CommandOutput>
   readonly interactiveCalls: () => readonly unknown[]
 }
@@ -100,6 +101,15 @@ export function mutationCommandBoundaryTests(spec: MutationCommandBoundarySpec):
     )
   }
 
+  it('keeps the default exit code when dispatch itself fails', async () => {
+    spec.apiMethod.mockRejectedValue(new Error('synthetic transport failure'))
+    const output = await spec.run(spec.command, ['--json', ...args(), '--execute'])
+    expect(spec.apiMethod).toHaveBeenCalledTimes(1)
+    expect(output.error?.message).not.toMatch(/UNCERTAIN/)
+    expect((output.error as Error & {oclif?: {exit?: number}})?.oclif?.exit).toBe(2)
+    expect(output.stdout).toBe('')
+  })
+
   const invalidResponses = [
     {label: 'missing response', response: undefined},
     {label: 'null response', response: null},
@@ -118,6 +128,15 @@ export function mutationCommandBoundaryTests(spec: MutationCommandBoundarySpec):
     {label: 'blank ID', response: {body: {[collection]: [{...resource, [idField]: '  '}]}}},
     {label: 'null ID', response: {body: {[collection]: [{...resource, [idField]: null}]}}},
     {label: 'non-string ID', response: {body: {[collection]: [{...resource, [idField]: 123}]}}},
+    ...(spec.targetsExistingResource
+      ? [
+          {
+            label: 'mismatched target ID',
+            response: {body: {[collection]: [{...resource, [idField]: 'synthetic-other-resource'}]}},
+          },
+        ]
+      : []),
+    {label: 'record errors flag', response: {body: {[collection]: [{...resource, hasErrors: true}]}}},
     {label: 'validation failure flag', response: {body: {[collection]: [{...resource, hasValidationErrors: true}]}}},
     {
       label: 'malformed validation flag',

@@ -167,6 +167,7 @@ describe.each([
     expectedPreviewLiteral: `${label} tracking-options`,
     expectedResultLine: line,
     executeResponse: result,
+    targetsExistingResource: label === 'update',
     run,
     interactiveCalls: () => prompt.calls,
   })

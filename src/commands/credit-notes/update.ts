@@ -87,7 +87,7 @@ export default class CreditNotesUpdate extends BaseCommand {
         const response = await xero.accountingApi.updateCreditNote(tenantId, sealedCreditNote.creditNoteID, {
           creditNotes: [sealedCreditNote],
         })
-        const resource = checkDirectMutationResult(response, 'credit-notes')
+        const resource = checkDirectMutationResult(response, 'credit-notes', sealedCreditNote.creditNoteID)
         return {
           resource,
           resultLine: `Credit note updated: ${resource?.creditNoteNumber ?? 'Draft'} (${resource?.creditNoteID})`,

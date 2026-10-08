@@ -138,8 +138,11 @@ export abstract class BaseCommand extends Command {
   }
 
   protected mutationError(caught: unknown, flags: {json?: boolean}): never {
-    if (flags.json && caught instanceof DirectMutationResultFailure) this.log('null')
-    this.error(caught instanceof Error ? caught.message : String(caught), {exit: 1})
+    if (caught instanceof DirectMutationResultFailure) {
+      if (flags.json) this.log('null')
+      this.error(caught.message, {exit: 1})
+    }
+    this.error(caught instanceof Error ? caught.message : String(caught))
   }
 
   protected getOutputFormat(flags: {json?: boolean; csv?: boolean; toon?: boolean}): OutputFormat {

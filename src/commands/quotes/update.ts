@@ -95,7 +95,7 @@ export default class QuotesUpdate extends BaseCommand {
         const response = await xero.accountingApi.updateQuote(tenantId, sealedQuote.quoteID, {
           quotes: [sealedQuote],
         })
-        const resource = checkDirectMutationResult(response, 'quotes')
+        const resource = checkDirectMutationResult(response, 'quotes', sealedQuote.quoteID)
         return {resource, resultLine: `Quote updated: ${resource?.quoteNumber} (${resource?.quoteID})`}
       },
     )

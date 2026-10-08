@@ -29,7 +29,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function hasProviderFailure(record: Record<string, unknown>): boolean {
-  for (const key of ['hasValidationErrors', 'HasValidationErrors']) {
+  for (const key of ['hasValidationErrors', 'HasValidationErrors', 'hasErrors', 'HasErrors']) {
     const flag = record[key]
     if (flag !== undefined && flag !== null && flag !== false) return true
   }
@@ -50,7 +50,11 @@ function hasProviderFailure(record: Record<string, unknown>): boolean {
  * Failure means the remote outcome is unverified, not that the write did not happen.
  * Return the original resource so successful JSON retains the SDK's raw shape.
  */
-export function checkDirectMutationResult(response: unknown, resource: MutationGateResource): Record<string, unknown> {
+export function checkDirectMutationResult(
+  response: unknown,
+  resource: MutationGateResource,
+  expectedId?: string,
+): Record<string, unknown> {
   const spec = RESOURCES[resource]
   if (!isRecord(response) || !isRecord(response.body)) {
     throw new DirectMutationResultFailure(resource, 'missing or malformed response body')
@@ -64,6 +68,9 @@ export function checkDirectMutationResult(response: unknown, resource: MutationG
   const id = record[spec.id]
   if (typeof id !== 'string' || id.trim() === '') {
     throw new DirectMutationResultFailure(resource, `missing or malformed ${spec.id}`)
+  }
+  if (expectedId !== undefined && id !== expectedId) {
+    throw new DirectMutationResultFailure(resource, `returned ${spec.id} does not match the targeted resource`)
   }
   if (hasProviderFailure(body) || hasProviderFailure(record)) {
     throw new DirectMutationResultFailure(resource, 'provider validation failure')

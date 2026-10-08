@@ -55,7 +55,7 @@ export default class ManualJournalsUpdate extends BaseCommand {
         const response = await xero.accountingApi.updateManualJournal(tenantId, sealedJournal.manualJournalID, {
           manualJournals: [sealedJournal],
         })
-        const resource = checkDirectMutationResult(response, 'manual-journals')
+        const resource = checkDirectMutationResult(response, 'manual-journals', sealedJournal.manualJournalID)
         return {resource, resultLine: `Manual journal updated: ${resource?.manualJournalID}`}
       },
     )

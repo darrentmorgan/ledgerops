@@ -95,7 +95,7 @@ export default class InvoicesUpdate extends BaseCommand {
         const response = await xero.accountingApi.updateInvoice(tenantId, sealedInvoice.invoiceID, {
           invoices: [sealedInvoice],
         })
-        const resource = checkDirectMutationResult(response, 'invoices')
+        const resource = checkDirectMutationResult(response, 'invoices', sealedInvoice.invoiceID)
         return {
           resource,
           resultLine: `Invoice updated: ${resource?.invoiceNumber} (${resource?.invoiceID})`,

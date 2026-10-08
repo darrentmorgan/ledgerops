@@ -75,7 +75,7 @@ export default class ContactsUpdate extends BaseCommand {
         const response = await xero.accountingApi.updateContact(tenantId, sealedContact.contactID, {
           contacts: [sealedContact],
         })
-        const resource = checkDirectMutationResult(response, 'contacts')
+        const resource = checkDirectMutationResult(response, 'contacts', sealedContact.contactID)
         return {resource, resultLine: `Contact updated: ${resource?.name} (${resource?.contactID})`}
       },
     )

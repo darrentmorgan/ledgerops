@@ -144,6 +144,7 @@ describe('invoices update shared command boundary', () => {
     fixture,
     expectedPreviewLiteral: 'update invoices',
     expectedResultLine: `Invoice updated: INV-0129 (${INVOICE_ID})`,
+    targetsExistingResource: true,
     executeResponse: {body: {invoices: [{invoiceID: INVOICE_ID, invoiceNumber: 'INV-0129'}]}},
     run,
     interactiveCalls: () => prompt.calls,

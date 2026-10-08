@@ -74,7 +74,7 @@ export default class ItemsUpdate extends BaseCommand {
       async (xero, tenantId, snapshot) => {
         const sealedItem = snapshot.payload as unknown as Item & {itemID: string}
         const response = await xero.accountingApi.updateItem(tenantId, sealedItem.itemID, {items: [sealedItem]})
-        const resource = checkDirectMutationResult(response, 'items')
+        const resource = checkDirectMutationResult(response, 'items', sealedItem.itemID)
         return {resource, resultLine: `Item updated: ${resource?.code} - ${resource?.name} (${resource?.itemID})`}
       },
     )

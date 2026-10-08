@@ -185,6 +185,7 @@ describe('manual journals update shared command boundary', () => {
     fixture: updateFixture,
     expectedPreviewLiteral: 'update manual-journals',
     expectedResultLine: `Manual journal updated: ${JOURNAL_ID}`,
+    targetsExistingResource: true,
     executeResponse: {body: {manualJournals: [{manualJournalID: JOURNAL_ID}]}},
     run,
     interactiveCalls: () => prompt.calls,

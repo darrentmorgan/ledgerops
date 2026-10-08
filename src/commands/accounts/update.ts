@@ -77,7 +77,7 @@ export default class AccountsUpdate extends BaseCommand {
         const response = await xero.accountingApi.updateAccount(tenantId, payload.accountID as string, {
           accounts: [payload],
         })
-        const resource = checkDirectMutationResult(response, 'accounts')
+        const resource = checkDirectMutationResult(response, 'accounts', payload.accountID as string)
         return {resource, resultLine: `Account updated: ${resource?.name} (${resource?.accountID})`}
       },
     )

@@ -211,6 +211,7 @@ describe('bank-transactions update shared command boundary', () => {
     fixture: updateFixture,
     expectedPreviewLiteral: 'update bank-transactions',
     expectedResultLine: `Bank transaction updated: ${UPDATE_ID}`,
+    targetsExistingResource: true,
     executeResponse: {
       body: {bankTransactions: [{bankTransactionID: UPDATE_ID, reference: 'BT-UPDATED-126', status: 'DELETED'}]},
     },

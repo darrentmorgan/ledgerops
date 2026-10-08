@@ -65,7 +65,7 @@ export default class TrackingCategoriesUpdate extends BaseCommand {
           sealedCategory.trackingCategoryID,
           sealedCategory,
         )
-        const resource = checkDirectMutationResult(response, 'tracking-categories')
+        const resource = checkDirectMutationResult(response, 'tracking-categories', sealedCategory.trackingCategoryID)
         return {resource, resultLine: `Tracking category updated: ${resource?.name} (${resource?.trackingCategoryID})`}
       },
     )

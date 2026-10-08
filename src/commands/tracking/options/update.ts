@@ -70,7 +70,7 @@ export default class TrackingOptionsUpdate extends BaseCommand {
           sealed.option.trackingOptionID,
           sealed.option,
         )
-        const resource = checkDirectMutationResult(response, 'tracking-options')
+        const resource = checkDirectMutationResult(response, 'tracking-options', sealed.option.trackingOptionID)
         return {resource, resultLine: `Tracking option updated: ${resource?.name} (${resource?.trackingOptionID})`}
       },
     )
