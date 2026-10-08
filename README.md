@@ -1,5 +1,9 @@
 # LedgerOps
 
+[![CI](https://github.com/darrentmorgan/ledgerops/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/darrentmorgan/ledgerops/actions/workflows/ci.yml?query=branch%3Amain)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/darrentmorgan/ledgerops/blob/main/LICENSE)
+[![Node.js 24+](https://img.shields.io/badge/node-%3E%3D24-brightgreen.svg)](https://github.com/darrentmorgan/ledgerops/blob/main/package.json)
+
 > v0.1, alpha. Feedback welcome via GitHub issues.
 >
 > LedgerOps is a fork of [XeroAPI/xero-command-line](https://github.com/XeroAPI/xero-command-line),
