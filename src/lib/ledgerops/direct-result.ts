@@ -69,7 +69,7 @@ export function checkDirectMutationResult(
   if (typeof id !== 'string' || id.trim() === '') {
     throw new DirectMutationResultFailure(resource, `missing or malformed ${spec.id}`)
   }
-  if (expectedId !== undefined && id !== expectedId) {
+  if (expectedId !== undefined && id.trim().toLowerCase() !== expectedId.trim().toLowerCase()) {
     throw new DirectMutationResultFailure(resource, `returned ${spec.id} does not match the targeted resource`)
   }
   if (hasProviderFailure(body) || hasProviderFailure(record)) {

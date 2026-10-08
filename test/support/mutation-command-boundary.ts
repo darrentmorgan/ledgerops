@@ -67,6 +67,17 @@ export function mutationCommandBoundaryTests(spec: MutationCommandBoundarySpec):
     expect(output.stdout).not.toContain('PENDING MUTATION')
   })
 
+  if (spec.targetsExistingResource) {
+    it('accepts a returned target ID that differs only in letter case', async () => {
+      const recased = {...resource, [idField]: String(resource[idField]).toUpperCase()}
+      spec.apiMethod.mockResolvedValue({body: {[collection]: [recased]}})
+      const output = await spec.run(spec.command, ['--json', ...args(), '--execute'])
+      expect(output.error).toBeUndefined()
+      expect(spec.apiMethod).toHaveBeenCalledTimes(1)
+      expect(JSON.parse(output.stdout)).toEqual(recased)
+    })
+  }
+
   it('preserves raw JSON including warnings and empty validation errors', async () => {
     const accepted = {
       ...resource,
