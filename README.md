@@ -98,6 +98,49 @@ Choose a read command from the reference below and pass your verified profile.
 Structured reads accept JSON output; PDF commands write files. Help output and
 synthetic identities do not verify a live organisation.
 
+## Token storage
+
+Cached tokens are encrypted with AES-256-GCM. Choose storage before login and
+keep the same settings for subsequent commands, including in new shell sessions
+or automation. Keys and salts use the active config directory: normally
+`~/.config/ledgerops`, or the configured historical `~/.config/xero-command-line`
+directory. On POSIX systems, the directory is private (`0700`) and secret files
+are owner-only (`0600`). Keep this state private on every platform.
+
+| Mode | Configuration and recovery |
+|---|---|
+| Auto (default) | `XERO_KEY_STORAGE=auto`: OS keychain only. If it cannot store a new key, login refuses without writing a file key. |
+| Keyring | `XERO_KEY_STORAGE=keyring`: OS keychain only, even when `XERO_KEYRING_FILE_BACKUP` is enabled. No file-key fallback. |
+| Auto with backup | `XERO_KEY_STORAGE=auto` with `XERO_KEYRING_FILE_BACKUP=1`: opts into `.encryption-key` beside the tokens. Mirrors a new key when possible and permits file storage/recovery if the keychain is unavailable. Refuses if neither store works. Enable it before creating the key; it does not retroactively back up an existing keychain key. |
+| File | `XERO_KEY_STORAGE=file`: stores and recovers the key only from `.encryption-key`; no OS keychain is required. |
+| Passphrase | Nonempty `XERO_TOKEN_PASSPHRASE` takes precedence over the storage mode. Derives the key from that passphrase and the persisted `.encryption-key.salt`; both must remain available. No file key or OS keychain is used. |
+
+For Linux/WSL/SSH, keychain storage needs a working OS secret service (for example,
+GNOME Keyring with libsecret) accessible from that session. For headless hosts
+without one, explicitly choose file storage before an authorised browser login:
+
+```sh
+export XERO_KEY_STORAGE=file
+ledgerops login --profile <your-profile>
+```
+
+Alternatively, supply `XERO_TOKEN_PASSPHRASE` securely through your environment
+or secret manager before login and every later command. Use a strong passphrase;
+keep it out of source control, shell history and logs. Storage setup does not
+remove the requirement for browser PKCE OAuth.
+
+File storage or an opted-in backup puts the encryption key alongside the tokens;
+anyone who can read both can decrypt them. Passphrase recovery requires the
+original salt and passphrase. Changing storage settings does not migrate keys
+or recreate a missing key. If reading a key fails, first restore the
+original keychain session, permitted backup, or passphrase and salt. An
+`.encryption-key` left by an earlier version can be recovered by setting
+`XERO_KEY_STORAGE=file` or `XERO_KEYRING_FILE_BACKUP=1`. If the key
+is lost, back up private state, clear the affected cache with
+`ledgerops logout --profile <your-profile>`, and log in again with the chosen
+settings. Every cached profile using the lost key needs re-authentication; a new
+key will not be created while encrypted token entries remain.
+
 ## Preview and execute
 
 All 20 direct mutations and the invoice batch are gated: a preview dispatches no

@@ -26,9 +26,9 @@ function passphraseSaltPath(): string {
 export const PASSPHRASE_ENV = 'XERO_TOKEN_PASSPHRASE'
 
 /**
- * Mirror the encryption key to `.encryption-key` inside the active config
- * directory when the OS keychain accepts a write. Opt-in — see FILE_BACKUP_ENV.
- * Off by default.
+ * Allow auto mode to mirror the encryption key to `.encryption-key` inside the
+ * active config directory, or use that file when the OS keychain is unavailable.
+ * Opt-in and off by default; ignored in keyring mode.
  */
 export const FILE_BACKUP_ENV = 'XERO_KEYRING_FILE_BACKUP'
 
@@ -104,7 +104,7 @@ export async function getOrCreateKey(): Promise<Buffer> {
 
   if (hasEncryptedTokens()) {
     throw new EncryptionKeyError(
-      'Could not read the encryption key for cached tokens. On Linux/WSL/SSH this usually means the secret service (e.g. GNOME Keyring) is unavailable in this session. Install and start gnome-keyring, set XERO_KEYRING_FILE_BACKUP=1 (if the keychain is flaky), XERO_KEY_STORAGE=file, or XERO_TOKEN_PASSPHRASE and run "ledgerops login" again. See README: Token storage.',
+      'Could not read the encryption key for cached tokens. Restore the original keychain session, opted-in file backup, or passphrase and salt. Changing storage settings does not recreate a missing key. An .encryption-key left by an earlier version can be recovered by setting XERO_KEY_STORAGE=file or XERO_KEYRING_FILE_BACKUP=1. If the key is lost, clear the affected cached tokens and log in again with the chosen storage settings. See README: Token storage.',
     )
   }
 
@@ -188,17 +188,21 @@ async function persistNewKey(key: Buffer, mode: KeyStorageMode): Promise<void> {
   const keyringOk = mode !== 'file' && (await tryKeyringSet(encoded))
 
   let fileOk = false
-  if (mode === 'file') {
-    fileOk = writeFileKey(encoded)
-  } else if (!keyringOk) {
-    // Keychain unavailable — persist to file so login can succeed in auto mode
+  if (mode === 'file' || (mode === 'auto' && isFileBackupEnabled())) {
+    // Only explicitly permitted file storage may mirror or replace the keychain.
     fileOk = writeFileKey(encoded)
   }
 
   if (keyringOk || fileOk) return
 
+  if (mode === 'file') {
+    throw new EncryptionKeyError(
+      `Could not write the encryption key to ${fileKeyPath()} using XERO_KEY_STORAGE=file. Make sure the config directory is writable by this user and no other file or directory occupies that path. See README: Token storage.`,
+    )
+  }
+
   throw new EncryptionKeyError(
-    'Could not store the encryption key. On Linux/WSL install gnome-keyring and libsecret, or set XERO_KEY_STORAGE=file, XERO_KEYRING_FILE_BACKUP=1, or XERO_TOKEN_PASSPHRASE. See README: Token storage.',
+    `Could not store the encryption key using XERO_KEY_STORAGE=${mode}. On Linux/WSL/SSH, install and start an OS secret service (e.g. gnome-keyring with libsecret) accessible in this session. For headless setup, explicitly choose XERO_KEY_STORAGE=file or XERO_TOKEN_PASSPHRASE before login; auto mode also permits XERO_KEYRING_FILE_BACKUP=1. Keyring mode never writes a file key. See README: Token storage.`,
   )
 }
 
@@ -239,9 +243,6 @@ async function tryKeyringSet(value: string): Promise<boolean> {
     const {Entry} = await import('@napi-rs/keyring')
     const entry = new Entry(KEYRING_SERVICE, KEYRING_ACCOUNT)
     entry.setPassword(value)
-    if (resolveKeyStorageMode() === 'auto' && isFileBackupEnabled()) {
-      writeFileKey(value)
-    }
     return true
   } catch {
     return false
