@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../../base-command.js'
+import {checkDirectMutationResult} from '../../../lib/ledgerops/direct-result.js'
 import {trackingCategoryUpdateSchema, formatZodError} from '../../../lib/validators.js'
 import type {TrackingCategory} from 'xero-node'
 
@@ -64,7 +65,7 @@ export default class TrackingCategoriesUpdate extends BaseCommand {
           sealedCategory.trackingCategoryID,
           sealedCategory,
         )
-        const resource = response.body.trackingCategories?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'tracking-categories', sealedCategory.trackingCategoryID)
         return {resource, resultLine: `Tracking category updated: ${resource?.name} (${resource?.trackingCategoryID})`}
       },
     )

@@ -4,6 +4,7 @@ import {join} from 'node:path'
 import {afterAll, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest'
 import {default as InvoicesCreate} from '../../src/commands/invoices/create.js'
 import {default as PaymentsCreate} from '../../src/commands/payments/create.js'
+import {mutationCommandBoundaryTests} from '../support/mutation-command-boundary.js'
 
 const TENANT = 'synthetic-gate-tenant-must-not-echo'
 
@@ -729,3 +730,28 @@ describe('payment create execution gate boundary', () => {
     expect(toon.stdout).toContain('pay-toon-1')
   })
 })
+
+for (const spec of [
+  {
+    command: InvoicesCreate,
+    apiMethod: api.createInvoices,
+    optionalLookup: api.getOrganisations,
+    fixture: () => writeFixture('invoice-result.json', invoiceFile),
+    expectedPreviewLiteral: 'create invoices',
+    expectedResultLine: 'Invoice created: INV-synthetic (synthetic-invoice)',
+    executeResponse: {body: {invoices: [{invoiceID: 'synthetic-invoice', invoiceNumber: 'INV-synthetic'}]}},
+  },
+  {
+    command: PaymentsCreate,
+    apiMethod: api.createPayment,
+    optionalLookup: api.getOrganisations,
+    fixture: () => writeFixture('payment-result.json', paymentFile),
+    expectedPreviewLiteral: 'create payments',
+    expectedResultLine: 'Payment created: synthetic-payment',
+    executeResponse: {body: {payments: [{paymentID: 'synthetic-payment', amount: 500}]}},
+  },
+]) {
+  describe(`${spec.expectedPreviewLiteral} shared result boundary`, () => {
+    mutationCommandBoundaryTests({...spec, run: runCommand, interactiveCalls: () => interactive.calls})
+  })
+}

@@ -5,6 +5,7 @@ import type {XeroClient} from 'xero-node'
 import {getProfileClientId, getDefaultProfile} from './lib/profiles.js'
 import {withRetry, withSingleAttempt} from './lib/xero-client.js'
 import {formatOutput, type OutputFormat} from './lib/formatters.js'
+import {DirectMutationResultFailure} from './lib/ledgerops/direct-result.js'
 import {
   runMutationGate,
   type MutationDescriptor,
@@ -53,7 +54,7 @@ export abstract class BaseCommand extends Command {
       tenantId: string,
       snapshot: MutationDescriptorSnapshot,
     ) => Promise<{
-      resource: Record<string, unknown> | undefined
+      resource: Record<string, unknown>
       resultLine: string
     }>,
   ): Promise<void> {
@@ -73,15 +74,15 @@ export abstract class BaseCommand extends Command {
       const {resource, resultLine} = outcome.response
       const format = this.getOutputFormat(flags)
       if (format === 'table') this.log(resultLine)
-      else if (format === 'json') this.log(JSON.stringify(resource ?? null, null, 2))
+      else if (format === 'json') this.log(JSON.stringify(resource, null, 2))
       else
         this.outputFormatted(
-          resource ? [resource] : [],
-          Object.keys(resource ?? {}).map(key => ({key, header: key})),
+          [resource],
+          Object.keys(resource).map(key => ({key, header: key})),
           flags,
         )
     } catch (caught) {
-      this.error(caught instanceof Error ? caught.message : String(caught))
+      this.mutationError(caught, flags)
     }
   }
 
@@ -119,7 +120,29 @@ export abstract class BaseCommand extends Command {
     credentials: {profileName: string; clientId: string},
     operation: (xero: XeroClient, tenantId: string) => Promise<T>,
   ): Promise<T> {
-    return withSingleAttempt(credentials.profileName, credentials.clientId, operation)
+    // The transport sanitizes provider errors. Preserve our result classification
+    // across that boundary so JSON failure output can be explicit and parseable.
+    let resultFailure: DirectMutationResultFailure | undefined
+    try {
+      return await withSingleAttempt(credentials.profileName, credentials.clientId, async (xero, tenantId) => {
+        try {
+          return await operation(xero, tenantId)
+        } catch (caught) {
+          if (caught instanceof DirectMutationResultFailure) resultFailure = caught
+          throw caught
+        }
+      })
+    } catch (caught) {
+      throw resultFailure ?? caught
+    }
+  }
+
+  protected mutationError(caught: unknown, flags: {json?: boolean}): never {
+    if (caught instanceof DirectMutationResultFailure) {
+      if (flags.json) this.log('null')
+      this.error(caught.message, {exit: 1})
+    }
+    this.error(caught instanceof Error ? caught.message : String(caught))
   }
 
   protected getOutputFormat(flags: {json?: boolean; csv?: boolean; toon?: boolean}): OutputFormat {
@@ -142,7 +165,8 @@ export abstract class BaseCommand extends Command {
     try {
       const response = await xero.accountingApi.getOrganisations(tenantId)
       const org = response.body.organisations?.[0]
-      return (org as Record<string, unknown>)?.shortCode as string | undefined
+      const shortCode = (org as Record<string, unknown>)?.shortCode
+      return typeof shortCode === 'string' && shortCode.trim() !== '' ? shortCode : undefined
     } catch {
       return undefined
     }

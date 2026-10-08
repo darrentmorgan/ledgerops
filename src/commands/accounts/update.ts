@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {accountUpdateSchema, accountFileUpdateSchema, formatZodError} from '../../lib/validators.js'
 import type {Account} from 'xero-node'
 
@@ -76,7 +77,7 @@ export default class AccountsUpdate extends BaseCommand {
         const response = await xero.accountingApi.updateAccount(tenantId, payload.accountID as string, {
           accounts: [payload],
         })
-        const resource = response.body.accounts?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'accounts', payload.accountID as string)
         return {resource, resultLine: `Account updated: ${resource?.name} (${resource?.accountID})`}
       },
     )

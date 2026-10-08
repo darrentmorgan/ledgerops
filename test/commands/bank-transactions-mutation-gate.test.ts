@@ -194,6 +194,7 @@ describe('bank-transactions create shared command boundary', () => {
   mutationCommandBoundaryTests({
     command: BankTransactionsCreate,
     apiMethod: api.createBankTransactions,
+    optionalLookup: api.getOrganisations,
     fixture: createFixture,
     expectedPreviewLiteral: 'create bank-transactions',
     expectedResultLine: `Bank transaction created: ${CREATE_ID}`,
@@ -210,6 +211,7 @@ describe('bank-transactions update shared command boundary', () => {
     fixture: updateFixture,
     expectedPreviewLiteral: 'update bank-transactions',
     expectedResultLine: `Bank transaction updated: ${UPDATE_ID}`,
+    targetsExistingResource: true,
     executeResponse: {
       body: {bankTransactions: [{bankTransactionID: UPDATE_ID, reference: 'BT-UPDATED-126', status: 'DELETED'}]},
     },

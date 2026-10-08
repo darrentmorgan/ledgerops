@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {paymentCreateSchema, paymentFileCreateSchema, formatZodError} from '../../lib/validators.js'
 import {paymentDeepLink} from '../../lib/deeplinks.js'
 import {ensureInvoiceNested, ensureAccountNested} from '../../lib/file-data.js'
@@ -7,7 +8,7 @@ import {runMutationGate, type MutationDescriptor} from '../../lib/ledgerops/muta
 import type {Payment} from 'xero-node'
 
 interface CreatedPayment {
-  resource: Record<string, unknown> | undefined
+  resource: Record<string, unknown>
   shortCode?: string
 }
 
@@ -105,16 +106,17 @@ export default class PaymentsCreate extends BaseCommand {
           dispatchOnce: async snapshot =>
             this.xeroMutationCall(snapshot.target, async (xero, tenantId) => {
               const response = await xero.accountingApi.createPayment(tenantId, snapshot.payload as unknown as Payment)
+              const resource = checkDirectMutationResult(response, 'payments')
               const shortCode = await this.getOrgShortCode(xero, tenantId)
               return {
-                resource: response.body.payments?.[0] as Record<string, unknown> | undefined,
+                resource,
                 shortCode,
               }
             }),
         },
       )
     } catch (caught) {
-      this.error(caught instanceof Error ? caught.message : String(caught))
+      this.mutationError(caught, flags)
     }
 
     if (!outcome.dispatched || !outcome.response) {

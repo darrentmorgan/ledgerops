@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {quoteCreateSchema, quoteFileCreateSchema, formatZodError} from '../../lib/validators.js'
 import {quoteDeepLink} from '../../lib/deeplinks.js'
 import {ensureContactNested} from '../../lib/file-data.js'
@@ -105,8 +106,8 @@ export default class QuotesCreate extends BaseCommand {
         const response = await xero.accountingApi.createQuotes(tenantId, {
           quotes: [snapshot.payload as unknown as Quote],
         })
+        const resource = checkDirectMutationResult(response, 'quotes')
         const shortCode = await this.getOrgShortCode(xero, tenantId)
-        const resource = response.body.quotes?.[0] as Record<string, unknown> | undefined
         const resultLine = `Quote created: ${resource?.quoteNumber} (${resource?.quoteID})`
         const link =
           shortCode && resource?.quoteID

@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {bankTransactionCreateSchema, bankTransactionFileCreateSchema, formatZodError} from '../../lib/validators.js'
 import {bankTransactionDeepLink} from '../../lib/deeplinks.js'
 import {ensureContactNested, ensureBankAccountNested} from '../../lib/file-data.js'
@@ -83,7 +84,7 @@ export default class BankTransactionsCreate extends BaseCommand {
       async (xero, tenantId, snapshot) => {
         const transaction = snapshot.payload as unknown as BankTransaction
         const response = await xero.accountingApi.createBankTransactions(tenantId, {bankTransactions: [transaction]})
-        const resource = response.body.bankTransactions?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'bank-transactions')
         const shortCode = await this.getOrgShortCode(xero, tenantId)
         const link =
           shortCode && resource?.bankTransactionID

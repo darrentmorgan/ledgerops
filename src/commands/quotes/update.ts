@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {quoteUpdateSchema, quoteFileUpdateSchema, formatZodError} from '../../lib/validators.js'
 import type {Quote, LineItem} from 'xero-node'
 
@@ -94,7 +95,7 @@ export default class QuotesUpdate extends BaseCommand {
         const response = await xero.accountingApi.updateQuote(tenantId, sealedQuote.quoteID, {
           quotes: [sealedQuote],
         })
-        const resource = response.body.quotes?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'quotes', sealedQuote.quoteID)
         return {resource, resultLine: `Quote updated: ${resource?.quoteNumber} (${resource?.quoteID})`}
       },
     )

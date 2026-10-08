@@ -187,6 +187,7 @@ describe('quotes create shared command boundary', () => {
   mutationCommandBoundaryTests({
     command: QuotesCreate,
     apiMethod: api.createQuotes,
+    optionalLookup: api.getOrganisations,
     fixture: createFixture,
     expectedPreviewLiteral: 'create quotes',
     expectedResultLine: `Quote created: QU-0132 (${CREATE_ID})`,
@@ -203,6 +204,7 @@ describe('quotes update shared command boundary', () => {
     fixture: updateFixture,
     expectedPreviewLiteral: 'update quotes',
     expectedResultLine: `Quote updated: QU-0133 (${UPDATE_ID})`,
+    targetsExistingResource: true,
     executeResponse: {body: {quotes: [{quoteID: UPDATE_ID, quoteNumber: 'QU-0133', status: 'SENT'}]}},
     run,
     interactiveCalls: () => prompt.calls,
@@ -210,12 +212,12 @@ describe('quotes update shared command boundary', () => {
 })
 
 describe.each([
-  {name: 'create', command: QuotesCreate, apiMethod: api.createQuotes, fixture: createFixture},
-  {name: 'update', command: QuotesUpdate, apiMethod: api.updateQuote, fixture: updateFixture},
-])('quotes $name target and confirmation safety', ({command, apiMethod, fixture: commandFixture}) => {
+  {name: 'create', command: QuotesCreate, apiMethod: api.createQuotes, fixture: createFixture, id: CREATE_ID},
+  {name: 'update', command: QuotesUpdate, apiMethod: api.updateQuote, fixture: updateFixture, id: UPDATE_ID},
+])('quotes $name target and confirmation safety', ({command, apiMethod, fixture: commandFixture, id}) => {
   it("requires the exact dual-TTY answer 'YES' and seals the pre-prompt profile", async () => {
     await dualTty(async () => {
-      apiMethod.mockResolvedValue({body: {quotes: [{quoteID: CREATE_ID, quoteNumber: 'QU-0132'}]}})
+      apiMethod.mockResolvedValue({body: {quotes: [{quoteID: id, quoteNumber: 'QU-0132'}]}})
       prompt.answer = 'y'
       const declined = await run(command, ['--file', commandFixture(), '--execute'])
       expect(declined.error?.message).toMatch(/declined/i)

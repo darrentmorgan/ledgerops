@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {contactCreateSchema, contactFileCreateSchema, formatZodError} from '../../lib/validators.js'
 import {contactDeepLink} from '../../lib/deeplinks.js'
 import type {Contact} from 'xero-node'
@@ -54,7 +55,7 @@ export default class ContactsCreate extends BaseCommand {
         const response = await xero.accountingApi.createContacts(tenantId, {
           contacts: [snapshot.payload as unknown as Contact],
         })
-        const resource = response.body.contacts?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'contacts')
         const shortCode = await this.getOrgShortCode(xero, tenantId)
         const link =
           shortCode && resource?.contactID

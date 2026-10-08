@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../../base-command.js'
+import {checkDirectMutationResult} from '../../../lib/ledgerops/direct-result.js'
 import {trackingCategoryCreateSchema, formatZodError} from '../../../lib/validators.js'
 import type {TrackingCategory} from 'xero-node'
 
@@ -41,7 +42,7 @@ export default class TrackingCategoriesCreate extends BaseCommand {
           tenantId,
           snapshot.payload as unknown as TrackingCategory,
         )
-        const resource = response.body.trackingCategories?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'tracking-categories')
         return {resource, resultLine: `Tracking category created: ${resource?.name} (${resource?.trackingCategoryID})`}
       },
     )

@@ -146,6 +146,7 @@ describe('accounts update shared command boundary', () => {
     fixture,
     expectedPreviewLiteral: 'update accounts',
     expectedResultLine: 'Account updated: Archive Account (account-path-125)',
+    targetsExistingResource: true,
     executeResponse: {body: {accounts: [{accountID: 'account-path-125', name: 'Archive Account', status: 'ARCHIVED'}]}},
     run,
     interactiveCalls: () => prompt.calls,

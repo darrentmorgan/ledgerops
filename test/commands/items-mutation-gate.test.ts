@@ -184,6 +184,7 @@ describe('items update shared command boundary', () => {
     fixture: updateFixture,
     expectedPreviewLiteral: 'update items',
     expectedResultLine: `Item updated: ITEM-130-UPDATED - Synthetic Item Updated (${ITEM_ID})`,
+    targetsExistingResource: true,
     executeResponse: {body: {items: [{itemID: ITEM_ID, code: 'ITEM-130-UPDATED', name: 'Synthetic Item Updated'}]}},
     run,
     interactiveCalls: () => prompt.calls,

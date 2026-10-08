@@ -190,6 +190,7 @@ describe('credit-notes create shared command boundary', () => {
   mutationCommandBoundaryTests({
     command: CreditNotesCreate,
     apiMethod: api.createCreditNotes,
+    optionalLookup: api.getOrganisations,
     fixture: createFixture,
     expectedPreviewLiteral: 'create credit-notes',
     expectedResultLine: `Credit note created: CN-0128 (${CREATE_ID})`,
@@ -206,6 +207,7 @@ describe('credit-notes update shared command boundary', () => {
     fixture: updateFixture,
     expectedPreviewLiteral: 'update credit-notes',
     expectedResultLine: `Credit note updated: CN-0129 (${UPDATE_ID})`,
+    targetsExistingResource: true,
     executeResponse: {
       body: {creditNotes: [{creditNoteID: UPDATE_ID, creditNoteNumber: 'CN-0129', status: 'VOIDED'}]},
     },
@@ -215,12 +217,12 @@ describe('credit-notes update shared command boundary', () => {
 })
 
 describe.each([
-  {name: 'create', command: CreditNotesCreate, apiMethod: api.createCreditNotes, fixture: createFixture},
-  {name: 'update', command: CreditNotesUpdate, apiMethod: api.updateCreditNote, fixture: updateFixture},
-])('credit-notes $name target and confirmation safety', ({command, apiMethod, fixture: commandFixture}) => {
+  {name: 'create', command: CreditNotesCreate, apiMethod: api.createCreditNotes, fixture: createFixture, id: CREATE_ID},
+  {name: 'update', command: CreditNotesUpdate, apiMethod: api.updateCreditNote, fixture: updateFixture, id: UPDATE_ID},
+])('credit-notes $name target and confirmation safety', ({command, apiMethod, fixture: commandFixture, id}) => {
   it("requires the exact dual-TTY answer 'YES' and seals the pre-prompt profile", async () => {
     await dualTty(async () => {
-      apiMethod.mockResolvedValue({body: {creditNotes: [{creditNoteID: CREATE_ID, creditNoteNumber: 'CN-0128'}]}})
+      apiMethod.mockResolvedValue({body: {creditNotes: [{creditNoteID: id, creditNoteNumber: 'CN-0128'}]}})
       prompt.answer = 'y'
       const declined = await run(command, ['--file', commandFixture(), '--execute'])
       expect(declined.error?.message).toMatch(/declined/i)

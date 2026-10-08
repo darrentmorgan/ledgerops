@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../../base-command.js'
+import {checkDirectMutationResult} from '../../../lib/ledgerops/direct-result.js'
 import {trackingOptionsCreateSchema, formatZodError} from '../../../lib/validators.js'
 import type {TrackingOption} from 'xero-node'
 
@@ -46,7 +47,7 @@ export default class TrackingOptionsCreate extends BaseCommand {
           sealed.trackingCategoryID,
           sealed.option,
         )
-        const resource = response.body.options?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'tracking-options')
         return {resource, resultLine: `Tracking option created: ${resource?.name} (${resource?.trackingOptionID})`}
       },
     )

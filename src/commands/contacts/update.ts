@@ -1,5 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
+import {checkDirectMutationResult} from '../../lib/ledgerops/direct-result.js'
 import {contactUpdateSchema, contactFileUpdateSchema, formatZodError} from '../../lib/validators.js'
 import type {Contact, Phone, Address} from 'xero-node'
 
@@ -74,7 +75,7 @@ export default class ContactsUpdate extends BaseCommand {
         const response = await xero.accountingApi.updateContact(tenantId, sealedContact.contactID, {
           contacts: [sealedContact],
         })
-        const resource = response.body.contacts?.[0] as Record<string, unknown> | undefined
+        const resource = checkDirectMutationResult(response, 'contacts', sealedContact.contactID)
         return {resource, resultLine: `Contact updated: ${resource?.name} (${resource?.contactID})`}
       },
     )
