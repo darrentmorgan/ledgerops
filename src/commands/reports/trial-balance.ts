@@ -1,6 +1,6 @@
 import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
-import {formatCurrency} from '../../lib/formatters.js'
+import {formatReport, type FinancialReport} from '../../lib/report-rows.js'
 
 export default class ReportsTrialBalance extends BaseCommand {
   static override description = 'Generate a trial balance report from Xero'
@@ -29,51 +29,20 @@ export default class ReportsTrialBalance extends BaseCommand {
       return response.body.reports?.[0]
     })
 
+    if (!result) this.error('No report data returned.')
+
     if (flags.json) {
       this.log(JSON.stringify(result, null, 2))
       return
     }
 
-    const report = result as Record<string, unknown> | undefined
-    if (!report) {
-      this.log('No report data returned.')
-      return
+    const report = result as FinancialReport
+    const format = this.getOutputFormat(flags)
+    if (format === 'table') {
+      if (report.reportName) this.log(`\n${report.reportName}`)
+      if (report.reportDate) this.log(report.reportDate)
+      this.log('')
     }
-
-    this.log(`\n${report.reportName as string}`)
-    this.log(`${(report.reportDate as string) ?? ''}`)
-    this.log('')
-
-    const rows = this.extractReportRows(report)
-    this.outputFormatted(
-      rows,
-      [
-        {key: 'account', header: 'Account'},
-        {key: 'debit', header: 'Debit', format: v => (v ? formatCurrency(v) : '')},
-        {key: 'credit', header: 'Credit', format: v => (v ? formatCurrency(v) : '')},
-      ],
-      {csv: flags.csv, toon: flags.toon},
-    )
-  }
-
-  private extractReportRows(report: Record<string, unknown>): Record<string, unknown>[] {
-    const rows: Record<string, unknown>[] = []
-    const sections = (report.rows ?? []) as Array<Record<string, unknown>>
-
-    for (const section of sections) {
-      const sectionRows = (section.rows ?? []) as Array<Record<string, unknown>>
-      for (const row of sectionRows) {
-        const cells = (row.cells ?? []) as Array<Record<string, unknown>>
-        if (cells.length >= 3) {
-          rows.push({
-            account: cells[0]?.value,
-            debit: cells[1]?.value,
-            credit: cells[2]?.value,
-          })
-        }
-      }
-    }
-
-    return rows
+    this.log(formatReport(report, ['Account', 'Debit', 'Credit'], format))
   }
 }
