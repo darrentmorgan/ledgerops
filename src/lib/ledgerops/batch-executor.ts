@@ -1,3 +1,4 @@
+import {isObjectRecord} from './workflows/structural-guards.js'
 import {createBatchLink} from './batch-link.js'
 import {preflightBatch} from './batch-preflight.js'
 import {createBatchReceipt} from './batch-receipt.js'
@@ -367,8 +368,4 @@ function isBatchRecordSink(value: unknown): value is BatchRecordSink {
   return (
     isObjectRecord(value) && typeof value.writeBatchLink === 'function' && typeof value.writeBatchReceipt === 'function'
   )
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }

@@ -1,3 +1,4 @@
+import {requireLabel, requireTimestamp} from './workflows/structural-guards.js'
 import {cloneCanonical, digestJson} from './canonical.js'
 import {fingerprintCapabilities, fingerprintScopes, normalizeCapabilities, normalizeScopes} from './capabilities.js'
 import {createTargetBinding, isSafeTargetBinding, sameBinding} from './identity.js'
@@ -184,13 +185,4 @@ function normalizeRequiredCapabilities(
     ...(requiredCapabilities ?? []),
     ...(requiredCapability === undefined ? [] : [requiredCapability]),
   ])
-}
-
-function requireLabel(value: string, field: string): string {
-  if (typeof value !== 'string' || value.trim() === '') throw new TypeError(`${field} must be a non-empty string`)
-  return value.trim()
-}
-
-function requireTimestamp(value: number, field: string): void {
-  if (typeof value !== 'number' || !Number.isFinite(value)) throw new TypeError(`${field} must be finite`)
 }

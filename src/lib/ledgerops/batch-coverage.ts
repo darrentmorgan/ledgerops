@@ -1,3 +1,4 @@
+import {isObjectRecord} from './workflows/structural-guards.js'
 import {parseAuditReceipt, parseWriteAheadIntent} from './audit.js'
 import {parseBatchLink} from './batch-link.js'
 import {createBatchManifest, parseBatchManifest} from './batch-manifest.js'
@@ -489,8 +490,4 @@ function failure(
   if (detail.index !== undefined) result.index = detail.index
   if (detail.recordIndex !== undefined) result.recordIndex = detail.recordIndex
   return result
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }

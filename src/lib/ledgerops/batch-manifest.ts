@@ -1,3 +1,4 @@
+import {requireLabel, requireTimestamp} from './workflows/structural-guards.js'
 import {defineSignedRecord, digest, finiteNumber, label, oneOf, shape} from './signed-record.js'
 import type {BatchHaltPolicy, BatchManifest, BatchManifestEntry, BatchProvenance} from './types.js'
 import {BATCH_HALT_POLICIES} from './types.js'
@@ -146,13 +147,4 @@ export function bindBatchManifestTenant(manifest: BatchManifest, tenantFingerpri
 
 export function isBatchManifestUnexpired(manifest: BatchManifest, now = Date.now()): boolean {
   return Number.isFinite(now) && now < manifest.expiresAt
-}
-
-function requireLabel(value: string, field: string): string {
-  if (typeof value !== 'string' || value.trim() === '') throw new TypeError(`${field} must be a non-empty string`)
-  return value.trim()
-}
-
-function requireTimestamp(value: number, field: string): void {
-  if (typeof value !== 'number' || !Number.isFinite(value)) throw new TypeError(`${field} must be finite`)
 }

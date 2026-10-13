@@ -1,4 +1,5 @@
 import type {MutationGateResource} from './mutation-gate.js'
+import {isObjectRecord} from './workflows/structural-guards.js'
 
 const RESOURCES = {
   accounts: {collection: 'accounts', id: 'accountID'},
@@ -22,10 +23,6 @@ export class DirectMutationResultFailure extends Error {
     )
     this.name = 'DirectMutationResultFailure'
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 function hasProviderFailure(record: Record<string, unknown>): boolean {
@@ -56,12 +53,12 @@ export function checkDirectMutationResult(
   expectedId?: string,
 ): Record<string, unknown> {
   const spec = RESOURCES[resource]
-  if (!isRecord(response) || !isRecord(response.body)) {
+  if (!isObjectRecord(response) || !isObjectRecord(response.body)) {
     throw new DirectMutationResultFailure(resource, 'missing or malformed response body')
   }
   const body = response.body
   const records = body[spec.collection]
-  if (!Array.isArray(records) || records.length !== 1 || !isRecord(records[0])) {
+  if (!Array.isArray(records) || records.length !== 1 || !isObjectRecord(records[0])) {
     throw new DirectMutationResultFailure(resource, `expected exactly one ${spec.collection} resource`)
   }
   const record = records[0]
