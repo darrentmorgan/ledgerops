@@ -1,3 +1,4 @@
+import {isObjectRecord} from './workflows/structural-guards.js'
 import {digestJson} from './canonical.js'
 import {hasRequiredCapabilities, hasRequiredScopes} from './capabilities.js'
 import {verifyConfirmation} from './confirmation.js'
@@ -164,8 +165,4 @@ function failure(code: MutationGuardFailure['code']): MutationGuardFailure {
 
 function hasText(value: unknown): value is string {
   return typeof value === 'string' && value.trim() !== ''
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }

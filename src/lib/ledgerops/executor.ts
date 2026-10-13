@@ -1,3 +1,4 @@
+import {isObjectRecord} from './workflows/structural-guards.js'
 import {digestJson} from './canonical.js'
 import {confirmationDigestFor} from './confirmation.js'
 import {createAuditReceipt, createWriteAheadIntent, type AuditReceiptInput} from './audit.js'
@@ -398,8 +399,4 @@ function normalizeForStop(value: unknown): MutationExecutionInput {
     transport: (isObjectRecord(record.transport) ? record.transport : {}) as unknown as MutationTransport,
     ...(typeof record.now === 'number' ? {now: record.now} : {}),
   }
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }

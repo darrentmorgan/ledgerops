@@ -135,7 +135,6 @@
     "zod": "^3"
   },
   "devDependencies": {
-    "@oclif/test": "^4",
     "@types/node": "^24.0.0",
     "oclif": "^4",
     "typescript": "^5.9.0",

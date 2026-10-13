@@ -1,3 +1,4 @@
+import {isObjectRecord} from './workflows/structural-guards.js'
 import {isBatchManifestUnexpired, parseBatchManifest} from './batch-manifest.js'
 import {isPlanUnexpired, parseMutationPlan} from './plan.js'
 import type {BatchPreflightDecision, BatchPreflightFailureCode} from './types.js'
@@ -66,8 +67,4 @@ export function preflightBatch(input: BatchPreflightInput): BatchPreflightDecisi
 
 function failure(code: BatchPreflightFailureCode, index?: number): BatchPreflightDecision {
   return index === undefined ? {ok: false, code} : {ok: false, code, index}
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }

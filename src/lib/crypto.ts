@@ -113,19 +113,6 @@ export async function getOrCreateKey(): Promise<Buffer> {
   return key
 }
 
-/**
- * Delete stored encryption keys (keyring + file + passphrase salt).
- */
-export async function deleteKey(): Promise<void> {
-  await tryKeyringDelete()
-  if (existsSync(fileKeyPath())) {
-    writeSecretFile(fileKeyPath(), '')
-  }
-  if (existsSync(passphraseSaltPath())) {
-    writeSecretFile(passphraseSaltPath(), '')
-  }
-}
-
 export function encrypt(plaintext: string, key: Buffer): string {
   const iv = randomBytes(IV_LENGTH)
   const cipher = createCipheriv(ALGORITHM, key, iv, {authTagLength: AUTH_TAG_LENGTH})
@@ -246,15 +233,5 @@ async function tryKeyringSet(value: string): Promise<boolean> {
     return true
   } catch {
     return false
-  }
-}
-
-async function tryKeyringDelete(): Promise<void> {
-  try {
-    const {Entry} = await import('@napi-rs/keyring')
-    const entry = new Entry(KEYRING_SERVICE, KEYRING_ACCOUNT)
-    entry.deletePassword()
-  } catch {
-    // Keyring unavailable or key doesn't exist
   }
 }
