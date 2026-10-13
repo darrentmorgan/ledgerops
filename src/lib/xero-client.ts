@@ -4,8 +4,6 @@ import {EncryptionKeyError} from './crypto.js'
 import {getClientHeaders} from './get-client-headers.js'
 import {refreshAccessToken} from './oauth.js'
 
-export {clearCachedToken}
-
 export async function createXeroClient(
   profileName: string,
   clientId: string,
