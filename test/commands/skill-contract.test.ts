@@ -115,7 +115,7 @@ describe('agent adapter contract', () => {
   })
 
   it('documents and advertises item listing without pagination', () => {
-    expect(rows.find(row => row.command === 'items list')?.inputs).toBe('—')
+    expect(rows.find(row => row.command === 'items list')?.inputs).toBe('No command-specific input')
     const result = cli(['items', 'list', '--help'])
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('List items in Xero')
