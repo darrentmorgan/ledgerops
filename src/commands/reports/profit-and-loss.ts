@@ -17,7 +17,7 @@ export default class ReportsProfitAndLoss extends BaseCommand {
     to: Flags.string({description: 'End date (YYYY-MM-DD)'}),
     periods: Flags.integer({description: 'Number of periods to compare'}),
     timeframe: Flags.string({description: 'Timeframe', options: ['MONTH', 'QUARTER', 'YEAR']}),
-    'payments-only': Flags.boolean({description: 'Include only accounts with payments', default: false}),
+    'payments-only': Flags.boolean({description: 'Use cash-basis reporting', default: false}),
     'standard-layout': Flags.boolean({description: 'Use standard layout', default: false}),
   }
 
@@ -35,8 +35,8 @@ export default class ReportsProfitAndLoss extends BaseCommand {
         undefined, // tracking option ID
         undefined, // tracking category ID 2
         undefined, // tracking option ID 2
-        flags['payments-only'] || undefined,
-        flags['standard-layout'] || undefined,
+        flags['standard-layout'] || undefined, // standardLayout
+        flags['payments-only'] || undefined, // paymentsOnly (cash basis)
       )
       return response.body.reports?.[0]
     })

@@ -252,6 +252,12 @@ Planned inventory capabilities are not commands. Plugin help is separate.
 | `tracking options update` | Gated mutation | Update one tracking option in Xero (preview by default; pass --execute to dispatch) |
 | `users list` | Live read | List users in Xero |
 
+For `reports profit-and-loss`, `reports balance-sheet`, and `reports trial-balance`,
+`--payments-only` requests cash-basis reporting. For profit and loss and balance sheet,
+`--standard-layout` selects Xero's standard layout independently of the accounting basis.
+Both flags can be used together. JSON preserves the raw report; CSV and TOON retain all
+returned report columns, including comparison periods.
+
 ## Offline demonstration
 
 The `target plan` / `target apply` pair is an opt-in, conservative lane that only

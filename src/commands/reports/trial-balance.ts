@@ -14,7 +14,7 @@ export default class ReportsTrialBalance extends BaseCommand {
   static override flags = {
     ...BaseCommand.baseFlags,
     date: Flags.string({description: 'Report date (YYYY-MM-DD)'}),
-    'payments-only': Flags.boolean({description: 'Include only accounts with payments', default: false}),
+    'payments-only': Flags.boolean({description: 'Use cash-basis reporting', default: false}),
   }
 
   async run(): Promise<void> {

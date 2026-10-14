@@ -16,7 +16,7 @@ export default class ReportsBalanceSheet extends BaseCommand {
     date: Flags.string({description: 'Report date (YYYY-MM-DD)'}),
     periods: Flags.integer({description: 'Number of periods to compare'}),
     timeframe: Flags.string({description: 'Timeframe', options: ['MONTH', 'QUARTER', 'YEAR']}),
-    'payments-only': Flags.boolean({description: 'Include only accounts with payments', default: false}),
+    'payments-only': Flags.boolean({description: 'Use cash-basis reporting', default: false}),
     'standard-layout': Flags.boolean({description: 'Use standard layout', default: false}),
     'tracking-option-id-1': Flags.string({description: 'Tracking option ID 1'}),
     'tracking-option-id-2': Flags.string({description: 'Tracking option ID 2'}),
@@ -33,8 +33,8 @@ export default class ReportsBalanceSheet extends BaseCommand {
         flags.timeframe as 'MONTH' | 'QUARTER' | 'YEAR' | undefined,
         flags['tracking-option-id-1'],
         flags['tracking-option-id-2'],
-        flags['payments-only'] || undefined,
-        flags['standard-layout'] || undefined,
+        flags['standard-layout'] || undefined, // standardLayout
+        flags['payments-only'] || undefined, // paymentsOnly (cash basis)
       )
       return response.body.reports?.[0]
     })

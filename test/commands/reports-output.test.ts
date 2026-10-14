@@ -82,7 +82,21 @@ function parseCsv(document: string): string[][] {
 }
 
 describe.each(cases)('$name report output', ({command}) => {
-  function renderer(flags: {toon?: boolean; csv?: boolean; json?: boolean; periods?: number}, data: unknown = report) {
+  const basisAndLayout =
+    command === BalanceSheet || command === ProfitAndLoss
+      ? [{}, {'payments-only': true}, {'standard-layout': true}, {'payments-only': true, 'standard-layout': true}]
+      : [{}]
+  function renderer(
+    flags: {
+      toon?: boolean
+      csv?: boolean
+      json?: boolean
+      periods?: number
+      'payments-only'?: boolean
+      'standard-layout'?: boolean
+    },
+    data: unknown = report,
+  ) {
     // Bypass only parsing and the live provider seam; exercise the actual run.
     const instance = Object.create(command.prototype)
     instance.parse = vi.fn().mockResolvedValue({flags})
@@ -95,16 +109,16 @@ describe.each(cases)('$name report output', ({command}) => {
     return {instance, output, stdout: () => output.map(line => `${line}\n`).join('')}
   }
 
-  it('exports every provider column and row as one complete TOON document', async () => {
-    const {instance, output, stdout} = renderer({toon: true, periods: 2})
+  it.each(basisAndLayout)('exports every provider column and row as one complete TOON document (%j)', async flags => {
+    const {instance, output, stdout} = renderer({toon: true, periods: 2, ...flags})
     await instance.run()
     expect(decode(stdout())).toEqual({columns, rows})
     expect(output).toHaveLength(1)
     expect(instance.xeroCall).toHaveBeenCalledTimes(1)
   })
 
-  it('exports every provider column and row as one complete CSV document', async () => {
-    const {instance, output, stdout} = renderer({csv: true, periods: 2})
+  it.each(basisAndLayout)('exports every provider column and row as one complete CSV document (%j)', async flags => {
+    const {instance, output, stdout} = renderer({csv: true, periods: 2, ...flags})
     await instance.run()
     expect(parseCsv(stdout())).toEqual([columns, ...rows].map(row => row.map(String)))
     expect(output).toHaveLength(1)
@@ -129,8 +143,8 @@ describe.each(cases)('$name report output', ({command}) => {
     }
   })
 
-  it('preserves the raw JSON report', async () => {
-    const {instance, output, stdout} = renderer({json: true})
+  it.each(basisAndLayout)('preserves the raw JSON report (%j)', async flags => {
+    const {instance, output, stdout} = renderer({json: true, ...flags})
     await instance.run()
     expect(output).toHaveLength(1)
     expect(JSON.parse(stdout())).toEqual(report)
