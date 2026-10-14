@@ -1,22 +1,20 @@
-import {Flags} from '@oclif/core'
 import {BaseCommand} from '../../base-command.js'
 import {formatCurrency} from '../../lib/formatters.js'
 
 export default class ItemsList extends BaseCommand {
   static override description = 'List items in Xero'
 
-  static override examples = ['<%= config.bin %> items list', '<%= config.bin %> items list --page 2']
+  static override examples = ['<%= config.bin %> items list']
 
   static override flags = {
     ...BaseCommand.baseFlags,
-    page: Flags.integer({description: 'Page number', default: 1}),
   }
 
   async run(): Promise<void> {
     const {flags} = await this.parse(ItemsList)
 
     const result = await this.xeroCall(flags, async (xero, tenantId) => {
-      const response = await xero.accountingApi.getItems(tenantId, undefined, undefined, undefined, flags.page)
+      const response = await xero.accountingApi.getItems(tenantId)
       return response.body.items ?? []
     })
 
