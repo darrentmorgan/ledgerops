@@ -164,7 +164,7 @@ field flags. Never infer file field names by stripping hyphens from flag names.
 | `invoices pdf` | PDF | --invoice-id, --out |
 | `invoices update` | Mutation | --file, --invoice-id, --contact-id, --date, --due-date, --reference |
 | `items create` | Mutation | --file, --code, --name, --description, --sale-price, --purchase-price |
-| `items list` | Array | --page |
+| `items list` | Array | — |
 | `items update` | Mutation | --file, --item-id, --code, --name, --description, --sale-price, --purchase-price |
 | `manual-journals create` | Mutation | --file |
 | `manual-journals list` | Array | --manual-journal-id, --modified-after, --page |

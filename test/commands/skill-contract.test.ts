@@ -113,4 +113,20 @@ describe('agent adapter contract', () => {
     expect(result.stdout).toContain('synthetic-skill')
     expect(() => JSON.parse(result.stdout)).toThrow()
   })
+
+  it('documents and advertises item listing without pagination', () => {
+    expect(rows.find(row => row.command === 'items list')?.inputs).toBe('—')
+    const result = cli(['items', 'list', '--help'])
+    expect(result.status).toBe(0)
+    expect(result.stdout).toContain('List items in Xero')
+    expect(result.stdout).toContain('ledgerops items list')
+    expect(result.stdout).not.toContain('--page')
+  })
+
+  it('rejects the retired item page flag in the shipped CLI before network access', () => {
+    const result = cli(['items', 'list', '--page', '2', '--json'])
+    expect(result.status).not.toBe(0)
+    expect(result.stderr).toContain('Nonexistent flag: --page')
+    expect(result.stdout).toBe('')
+  })
 })
