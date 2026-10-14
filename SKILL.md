@@ -199,6 +199,10 @@ field flags. Never infer file field names by stripping hyphens from flag names.
 | `tracking options update` | Mutation | --category-id, --option-id, --name, --status |
 | `users list` | Array | --user-id |
 
+For profit and loss, balance sheet, and trial balance, `--payments-only` requests
+cash-basis reporting. `--standard-layout` selects the standard layout independently
+for profit and loss and balance sheet; it can be combined with `--payments-only`.
+
 ## Offline examples
 
 The `target plan` / `target apply` pair is an opt-in, conservative lane that only
