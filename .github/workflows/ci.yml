@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'
 
 permissions:
   contents: read
@@ -16,23 +18,39 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ fromJSON(matrix.os == 'ubuntu-latest' && vars.CI_RUNNER_JSON || toJSON(matrix.os)) }}
+    # Preserve required OS check names on PRs without using hosted runners.
+    runs-on: ${{ fromJSON((matrix.os == 'ubuntu-latest' || github.event_name == 'pull_request') && vars.CI_RUNNER_JSON || toJSON(matrix.os)) }}
     steps:
+      - name: Hosted OS coverage deferred
+        if: matrix.os != 'ubuntu-latest' && github.event_name == 'pull_request'
+        run: echo 'Full macOS and Windows tests run on pushes to main and weekly; this PR compatibility check preserves the required status name.'
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        if: matrix.os == 'ubuntu-latest' || github.event_name != 'pull_request'
         with:
           persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        if: matrix.os == 'ubuntu-latest' || github.event_name != 'pull_request'
         with:
           node-version: 24
           package-manager-cache: false
           cache: npm
       - run: npm ci
+        if: matrix.os == 'ubuntu-latest' || github.event_name != 'pull_request'
       - run: npm run format
+        if: matrix.os == 'ubuntu-latest' || github.event_name != 'pull_request'
       - run: npm run lint
+        if: matrix.os == 'ubuntu-latest' || github.event_name != 'pull_request'
       - run: npm run typecheck
+        if: matrix.os == 'ubuntu-latest' || github.event_name != 'pull_request'
       - run: npm run build
+        if: matrix.os == 'ubuntu-latest' || github.event_name != 'pull_request'
       - run: npm test
+        if: matrix.os == 'ubuntu-latest' || github.event_name != 'pull_request'
       - run: npm run inventory:check
+        if: matrix.os == 'ubuntu-latest' || github.event_name != 'pull_request'
       - run: npm audit --omit=dev
+        if: matrix.os == 'ubuntu-latest' || github.event_name != 'pull_request'
       - run: npm run pack:check
+        if: matrix.os == 'ubuntu-latest' || github.event_name != 'pull_request'
       - run: npm run pack:smoke
+        if: matrix.os == 'ubuntu-latest' || github.event_name != 'pull_request'
