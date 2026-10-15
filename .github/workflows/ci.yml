@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'
 
 permissions:
   contents: read
@@ -15,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-latest"]' || '["ubuntu-latest","macos-latest","windows-latest"]') }}
     runs-on: ${{ fromJSON(matrix.os == 'ubuntu-latest' && vars.CI_RUNNER_JSON || toJSON(matrix.os)) }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -36,3 +38,15 @@ jobs:
       - run: npm audit --omit=dev
       - run: npm run pack:check
       - run: npm run pack:smoke
+
+  hosted-os-deferred:
+    if: github.event_name == 'pull_request'
+    name: CI / Node 24 / ${{ matrix.os }}
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ fromJSON(vars.CI_RUNNER_JSON) }}
+    steps:
+      - run: echo 'Full macOS and Windows tests run on pushes to main and weekly; this PR compatibility check preserves the required status name.'

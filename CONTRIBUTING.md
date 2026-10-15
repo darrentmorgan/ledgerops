@@ -63,8 +63,8 @@ git diff --check   # no whitespace errors
 ```
 
 Biome is the single formatter and linter. Use `npm run format:write` to apply
-formatting, then inspect the diff. All checks above must pass. CI checks Node 24 on
-Linux, macOS, and Windows (see [.github/workflows/ci.yml](.github/workflows/ci.yml)).
+formatting, then inspect the diff. All checks above must pass. CI behaviour
+is described in [docs/release.md](docs/release.md).
 
 ## Reporting issues
 
