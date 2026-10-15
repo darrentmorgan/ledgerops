@@ -1,7 +1,10 @@
 # CI and releases
 
-Every pull request runs `CI / Node 24 / ubuntu-latest`, `CI / Node 24 / macos-latest`,
-and `CI / Node 24 / windows-latest`. Each checks formatting, lint (including warnings),
+Every pull request runs the `CI / Node 24 / ubuntu-latest` test. The
+`CI / Node 24 / macos-latest` and `CI / Node 24 / windows-latest` checks are
+placeholders on pull requests that only keep the required check names reporting. The
+full macOS and Windows suites run on pushes to `main` and Mondays 06:00 UTC. The full
+suite checks formatting, lint (including warnings),
 types, build, offline tests, generated inventory, production dependency audit, and
 package contents including upstream attribution, then installs the packed tarball into
 an isolated prefix and runs its `ledgerops --help` and `invoices create --help` with
