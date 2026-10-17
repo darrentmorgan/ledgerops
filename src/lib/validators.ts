@@ -288,7 +288,7 @@ const fileUpdateLineItems = z.array(fileUpdateLineItemSchema).min(1, 'At least o
 
 // JSON exponent overflow is legal to parse but would serialize as null. Check
 // every nested numeric value, including SDK fields outside the minimum schema.
-function filePayload<T extends z.AnyZodObject>(schema: T) {
+function filePayload<S extends z.ZodRawShape>(schema: z.ZodObject<S>) {
   return schema.passthrough().superRefine((data, ctx) => {
     function visit(value: unknown, path: (string | number)[]): void {
       if (typeof value === 'number' && !Number.isFinite(value)) {
@@ -305,7 +305,7 @@ function filePayload<T extends z.AnyZodObject>(schema: T) {
   })
 }
 
-function withContact<T extends z.AnyZodObject>(schema: T) {
+function withContact<S extends z.ZodRawShape>(schema: z.ZodObject<S>) {
   return filePayload(schema).refine(
     data => data.contact !== undefined || data.contactID !== undefined || data.contactId !== undefined,
     {path: ['contact'], message: 'Contact relationship is required'},
