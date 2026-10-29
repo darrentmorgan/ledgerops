@@ -123,10 +123,10 @@
     ]
   },
   "dependencies": {
-    "@inquirer/prompts": "^8.7.3",
-    "@napi-rs/keyring": "^2.1.1",
-    "@oclif/core": "^5.1.8",
-    "@oclif/plugin-help": "^7.0.4",
+    "@inquirer/prompts": "^8.7.4",
+    "@napi-rs/keyring": "^2.1.2",
+    "@oclif/core": "^5.1.9",
+    "@oclif/plugin-help": "^7.0.5",
     "@toon-format/toon": "^4.4.0",
     "chalk": "^6.0.1",
     "cli-table3": "^0.6",
@@ -135,9 +135,9 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.15",
+    "@biomejs/biome": "^2.6.2",
     "@types/node": "^26.6.5",
-    "oclif": "^6.0.8",
+    "oclif": "^6.0.10",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.0.5"
